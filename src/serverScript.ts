@@ -96,7 +96,7 @@ app.get('/didOpen', (req, res) => {
       textDocument: { //TODO: figure out how exactly the parameters work and implement
         uri: req.query.uri as string,
         languageId: req.query.languageId as string,
-        version: 1, //TODO: figure out how to get the version
+        version: parseInt(req.query.version as string), //TODO: figure out how to get the version
         text: req.query.text as string
       }
     });
