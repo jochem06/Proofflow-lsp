@@ -37,7 +37,10 @@
     "build:watch": "tsc -w -p tsconfig.release.json",
     "lint": "eslint src/ __tests__/ --ext .ts,.tsx",
     "test": "vitest run --coverage",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "run-main": "node build/src/main.js",
+    "run-serverscript": "node build/src/serverscript.js",
+    "start-all": "npm run run-main && npm run run-serverscript"
   },
   "author": "Raffaele Fioratto <raffaele.fioratto@gmail.com>",
   "license": "MIT",
