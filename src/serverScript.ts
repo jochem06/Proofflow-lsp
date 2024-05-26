@@ -52,7 +52,7 @@ app.get('/start_server', (req, res) => {
 
 // Define an endpoint to initialize the server
 app.get('/initialize_server', (req, res) => {
-  if (client && process) {
+  if (client !== null) {
     const filePath = req.query.filePath as string;
     client.initialize({
       processId: process.pid,
@@ -72,6 +72,168 @@ app.get('/initialize_server', (req, res) => {
     res.send('Client initialized');
   } else {
     res.status(500).send('Server is not started');
+  }
+});
+
+app.get('/initialized', (_, res) => {
+  client.initialized();
+  res.send('Initialized');
+});
+
+app.get('/shutdown', (_, res) => {
+  client.shutdown();
+  res.send('Client has been shut down');
+});
+
+app.get('/exit', (_, res) => {
+  client.exit();
+  res.send('Client exited');
+});
+
+app.get('/didOpen', (req, res) => {
+  if (client !== null) {
+    client.didOpen({
+      textDocument: { //TODO: figure out how exactly the parameters work and implement
+        uri: req.query.uri as string,
+        languageId: req.query.languageId as string,
+        version: 1, //TODO: figure out how to get the version
+        text: req.query.text as string
+      }
+    });
+    res.send('Document opened');
+  }
+});
+
+app.get('/didClose', (req, res) => {
+  if (client !== null) {
+    client.didClose({
+      textDocument: {
+        uri: req.query.uri as string
+      }
+    });
+    res.send('Document closed');
+  }
+});
+
+app.get('/documentSymbol', (req, res) => {
+  if (client !== null) {
+    client.documentSymbol({
+      textDocument: {
+        uri: req.query.uri as string
+      }
+    }).then((result) => {
+      res.send(result);
+    });
+  }
+});
+
+app.get('/references', (req, res) => {
+  if (client !== null) {
+    client.references({
+      context: {
+        includeDeclaration: true
+      },
+      textDocument: {
+        uri: req.query.uri as string
+      },
+      position: {
+        line: parseInt(req.query.line as string),
+        character: parseInt(req.query.character as string)
+      }
+    }).then((result) => {
+      res.send(result);
+    });
+  }
+});
+
+app.get('/definition', (req, res) => {
+  if (client !== null) {
+    client.definition({
+      textDocument: {
+        uri: req.query.uri as string
+      },
+      position: {
+        line: parseInt(req.query.line as string),
+        character: parseInt(req.query.character as string)
+      }
+    }).then((result) => {
+      res.send(result);
+    });
+  }
+});
+
+app.get('/typeDefinition', (req, res) => {
+  if (client !== null) {
+    client.typeDefinition({
+      textDocument: {
+        uri: req.query.uri as string
+      },
+      position: {
+        line: parseInt(req.query.line as string),
+        character: parseInt(req.query.character as string)
+      }
+    }).then((result) => {
+      res.send(result);
+    });
+  }
+});
+
+app.get('/signatureHelp', (req, res) => {
+  if (client !== null) {
+    client.signatureHelp({
+      textDocument: {
+        uri: req.query.uri as string
+      },
+      position: {
+        line: parseInt(req.query.line as string),
+        character: parseInt(req.query.character as string)
+      },
+      context: {
+        triggerKind: lspClient.SignatureHelpTriggerKind.Invoked,
+        isRetrigger: false
+      }
+    }).then((result) => {
+      res.send(result);
+    });
+  }
+});
+
+app.get('/once', (req, res) => {
+  if (client !== null) {
+    client.once(req.query.method as string); //TODO: ???
+    res.send(client.once(req.query.method as string));
+  }
+});
+
+app.get('/hover', (req, res) => {
+  if (client !== null) {
+    client.hover({
+      textDocument: {
+        uri: req.query.uri as string
+      },
+      position: {
+        line: parseInt(req.query.line as string),
+        character: parseInt(req.query.character as string)
+      }
+    }).then((result) => {
+      res.send(result);
+    });
+  }
+});
+
+app.get('/declaration', (req, res) => {
+  if (client !== null) {
+    client.gotoDeclaration({
+      textDocument: {
+        uri: req.query.uri as string
+      },
+      position: {
+        line: parseInt(req.query.line as string),
+        character: parseInt(req.query.character as string)
+      }
+    }).then((result) => {
+      res.send(result);
+    });
   }
 });
 
