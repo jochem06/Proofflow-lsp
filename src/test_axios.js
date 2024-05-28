@@ -274,9 +274,9 @@ function didOpen(uri, languageId, text, version) {
 //   gotoDeclaration
 // };
 startServer().then(function () {
-    initializeServer('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean').then(function () {
+    initializeServer('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v').then(function () {
         initialized().then(function () {
-            didOpen('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean', 'lean', 'example', '1');
+            didOpen('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v', 'coq', 'example', '1');
         });
     });
 });
