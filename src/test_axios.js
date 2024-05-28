@@ -247,5 +247,5 @@ function initializeServer(filePath) {
 //   gotoDeclaration
 // };
 startServer().then(function () {
-    initializeServer('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean');
+    initializeServer('C:\\Users\\smile\\OneDrive - TU Eindhoven\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean');
 });
