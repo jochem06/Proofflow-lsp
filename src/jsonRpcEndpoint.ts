@@ -36,8 +36,9 @@ export class JSONRPCEndpoint extends EventEmitter {
                 if (jsonRPCResponse.id === (this.nextId - 1)) {
                     this.client.receive(jsonRPCResponse);
                 } else {
-                    Logger.log(`[transform] ${jsonRPCResponseOrRequest}`, LoggerLevel.ERROR);
-                    this.emit('error', `[transform] Received id mismatch! Got ${jsonRPCResponse.id}, expected ${this.nextId - 1}`);
+                    // Logger.log(`[transform] ${jsonRPCResponseOrRequest}`, LoggerLevel.ERROR);
+                    // this.emit('error', `[transform] Received id mismatch! Got ${jsonRPCResponse.id}, expected ${this.nextId - 1}`);
+                    this.client.receive(jsonRPCResponse);
                 }
             } else {
                 const jsonRPCRequest: JSONRPCRequest = jsonrpc as JSONRPCRequest;

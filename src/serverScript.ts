@@ -15,7 +15,8 @@ let endpoint: JSONRPCEndpoint | null = null;
 app.get('/start_server', (req, res) => {
   if (req.query.server === 'coq') {
     const process: ChildProcessWithoutNullStreams = spawn(
-      'C:\\Coq-Platform~8.19-lsp\\bin\\coq-lsp.exe',
+      'C:\\Users\\20212170\\.elan\\toolchains\\leanprover--lean4---stable\\bin\\lean.exe',
+      ['--server'],
       {
         shell: true,
         stdio: 'pipe'
@@ -54,6 +55,7 @@ app.get('/start_server', (req, res) => {
 app.get('/initialize_server', (req, res) => {
   if (client !== null) {
     const filePath = req.query.filePath as string;
+    console.log('process.pid:', process.pid);
     client.initialize({
       processId: process.pid,
       capabilities: {},
@@ -68,8 +70,10 @@ app.get('/initialize_server', (req, res) => {
         }
       ],
       rootUri: null
+    }).then((result) => {
+      res.send('Client initialized' + result);
     });
-    res.send('Client initialized');
+    
   } else {
     res.status(500).send('Server is not started');
   }
