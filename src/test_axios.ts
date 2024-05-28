@@ -28,14 +28,14 @@ async function initializeServer(filePath: string) {
 }
 
 // // try these below
-// async function initialized() {
-//   try {
-//     const response = await axios.get('http://localhost:3000/initialized');
-//     console.log('Initialized Response:', response.data);
-//   } catch (error) {
-//     console.error('Error during initialization:', error);
-//   }
-// }
+async function initialized() {
+  try {
+    const response = await axios.get('http://localhost:3000/initialized');
+    console.log('Initialized Response:', response.data);
+  } catch (error) {
+    console.error('Error during initialization:', error);
+  }
+}
 
 // async function shutdown() {
 //   try {
@@ -55,20 +55,21 @@ async function initializeServer(filePath: string) {
 //   }
 // }
 
-// async function didOpen(uri: string, languageId: string, text: string) {
-//   try {
-//     const response = await axios.get('http://localhost:3000/didOpen', {
-//       params: {
-//         uri: uri,
-//         languageId: languageId,
-//         text: text
-//       }
-//     });
-//     console.log('DidOpen Response:', response.data);
-//   } catch (error) {
-//     console.error('Error opening document:', error);
-//   }
-// }
+async function didOpen(uri: string, languageId: string, text: string, version: string) {
+  try {
+    const response = await axios.get('http://localhost:3000/didOpen', {
+      params: {
+        uri: uri,
+        languageId: languageId,
+        text: text,
+        version: version
+      }
+    });
+    console.log('DidOpen Response:', response.data);
+  } catch (error) {
+    console.error('Error opening document:', error);
+  }
+}
 
 // async function didClose(uri: string) {
 //   try {
@@ -200,5 +201,9 @@ async function initializeServer(filePath: string) {
 // };
 
 startServer().then(() => {
-  initializeServer('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean');
+  initializeServer('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v').then(() => {
+    initialized().then(() => {
+      didOpen('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v', 'coq', 'example', '1');
+    });
+  });
 });

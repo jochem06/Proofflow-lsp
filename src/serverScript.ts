@@ -15,8 +15,7 @@ let endpoint: JSONRPCEndpoint | null = null;
 app.get('/start_server', (req, res) => {
   if (req.query.server === 'coq') {
     const process: ChildProcessWithoutNullStreams = spawn(
-      'C:\\Users\\20212170\\.elan\\toolchains\\leanprover--lean4---stable\\bin\\lean.exe',
-      ['--server'],
+      'C:\\Coq-Platform~8.19-lsp\\bin\\coq-lsp.exe',
       {
         shell: true,
         stdio: 'pipe'
@@ -103,6 +102,10 @@ app.get('/didOpen', (req, res) => {
         version: parseInt(req.query.version as string), //TODO: figure out how to get the version
         text: req.query.text as string
       }
+    });
+    endpoint.on('textDocument/publishDiagnostics', (params) => {
+      console.log('Diagnostics received:', params);
+      // Handle the diagnostics data here
     });
     res.send('Document opened');
   }
@@ -245,3 +248,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+

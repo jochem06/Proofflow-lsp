@@ -88,14 +88,27 @@ function initializeServer(filePath) {
     });
 }
 // // try these below
-// async function initialized() {
-//   try {
-//     const response = await axios.get('http://localhost:3000/initialized');
-//     console.log('Initialized Response:', response.data);
-//   } catch (error) {
-//     console.error('Error during initialization:', error);
-//   }
-// }
+function initialized() {
+    return __awaiter(this, void 0, void 0, function () {
+        var response, error_3;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, axios_1.default.get('http://localhost:3000/initialized')];
+                case 1:
+                    response = _a.sent();
+                    console.log('Initialized Response:', response.data);
+                    return [3 /*break*/, 3];
+                case 2:
+                    error_3 = _a.sent();
+                    console.error('Error during initialization:', error_3);
+                    return [3 /*break*/, 3];
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
 // async function shutdown() {
 //   try {
 //     const response = await axios.get('http://localhost:3000/shutdown');
@@ -112,20 +125,34 @@ function initializeServer(filePath) {
 //     console.error('Error during exit:', error);
 //   }
 // }
-// async function didOpen(uri: string, languageId: string, text: string) {
-//   try {
-//     const response = await axios.get('http://localhost:3000/didOpen', {
-//       params: {
-//         uri: uri,
-//         languageId: languageId,
-//         text: text
-//       }
-//     });
-//     console.log('DidOpen Response:', response.data);
-//   } catch (error) {
-//     console.error('Error opening document:', error);
-//   }
-// }
+function didOpen(uri, languageId, text, version) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response, error_4;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, axios_1.default.get('http://localhost:3000/didOpen', {
+                            params: {
+                                uri: uri,
+                                languageId: languageId,
+                                text: text,
+                                version: version
+                            }
+                        })];
+                case 1:
+                    response = _a.sent();
+                    console.log('DidOpen Response:', response.data);
+                    return [3 /*break*/, 3];
+                case 2:
+                    error_4 = _a.sent();
+                    console.error('Error opening document:', error_4);
+                    return [3 /*break*/, 3];
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
 // async function didClose(uri: string) {
 //   try {
 //     const response = await axios.get('http://localhost:3000/didClose', {
@@ -247,5 +274,9 @@ function initializeServer(filePath) {
 //   gotoDeclaration
 // };
 startServer().then(function () {
-    initializeServer('C:\\Users\\smile\\OneDrive - TU Eindhoven\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean');
+    initializeServer('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean').then(function () {
+        initialized().then(function () {
+            didOpen('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean', 'lean', 'example', '1');
+        });
+    });
 });
