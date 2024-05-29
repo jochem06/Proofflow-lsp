@@ -27,7 +27,7 @@ async function initializeServer(filePath: string) {
   }
 }
 
-// // try these below
+// try these below
 async function initialized() {
   try {
     const response = await axios.get('http://localhost:3000/initialized');

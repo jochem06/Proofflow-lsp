@@ -87,7 +87,7 @@ function initializeServer(filePath) {
         });
     });
 }
-// // try these below
+// try these below
 function initialized() {
     return __awaiter(this, void 0, void 0, function () {
         var response, error_3;
