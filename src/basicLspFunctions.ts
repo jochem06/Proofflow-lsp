@@ -1,11 +1,13 @@
 import axios from 'axios';
+import express from 'express';
 
+const app = express();
 
 async function startServer() {
   try {
     const response = await axios.get('http://localhost:3000/start_server', {
       params: {
-        server: 'coq'
+        server: 'lean'
       }
     });
     console.log('Server Response:', response.data);
@@ -200,10 +202,34 @@ async function didOpen(uri: string, languageId: string, text: string, version: s
 //   gotoDeclaration
 // };
 
+app.use(express.json());
+
+app.post('/publishDiagnostics', (req, _) => {
+  console.log('Received request:', req.body);
+
+  const { uri, version, diagnostics } = req.body;
+
+  if (diagnostics.length !== 0) {
+    console.log('Received diagnostics:');
+    console.log('URI:', uri);
+    console.log('Version:', version);
+    diagnostics.forEach((diagnostic: any) => {
+      console.log('Range:', diagnostic.range);
+      console.log('Message:', diagnostic.message);
+    });
+  }
+
+});
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
 startServer().then(() => {
-  initializeServer('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v').then(() => {
+  initializeServer('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean').then(() => {
     initialized().then(() => {
-      didOpen('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v', 'coq', 'example', '1');
+      didOpen('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean', 'lean', 'example', '1');
     });
   });
 });

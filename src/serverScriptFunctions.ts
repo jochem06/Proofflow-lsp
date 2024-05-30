@@ -3,6 +3,7 @@ import { JSONRPCEndpoint, LspClient } from '../src/main';
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 //import * as path from 'path';
 import { pathToFileURL } from "url";
+import axios from 'axios';
 
 let client: LspClient | null = null;
 let endpoint: JSONRPCEndpoint | null = null;
@@ -10,6 +11,41 @@ let endpoint: JSONRPCEndpoint | null = null;
 function startCoqServer() {
     const process: ChildProcessWithoutNullStreams = spawn(
         'C:\\Coq-Platform~8.19-lsp\\bin\\coq-lsp.exe',
+        {
+            shell: true,
+            stdio: 'pipe'
+        }
+    );
+
+    // Listen for data on the stdout stream
+    process.stdout.on('data', (data: Buffer) => {
+        console.log(`stdout: ${data.toString()}`);
+
+        // Check if the data contains a message indicating the server has started
+        if (data.toString().includes('Server started')) {
+            console.log('Language server has started successfully.');
+        }
+    });
+
+    // Listen for data on the stderr stream
+    process.stderr.on('data', (data: Buffer) => {
+        console.error(`stderr: ${data.toString()}`);
+    });
+
+    // create an RPC endpoint for the process
+    endpoint = new lspClient.JSONRPCEndpoint(
+        process.stdin,
+        process.stdout,
+    );
+
+    // create the LSP client
+    client = new LspClient(endpoint);
+}
+
+async function startLeanServer() {
+    const process: ChildProcessWithoutNullStreams = spawn(
+        'C:\\Users\\smile\\.elan\\toolchains\\leanprover--lean4---stable\\bin\\lean.exe',
+        ['--server'],
         {
             shell: true,
             stdio: 'pipe'
@@ -102,7 +138,16 @@ function didOpen(uri: string, languageId: string, text: string, version: string)
         });
         endpoint.on('textDocument/publishDiagnostics', (params) => {
             console.log('Diagnostics received:', params);
-            // Handle the diagnostics data here
+            //console.log('Diagnostics message:', params.diagnostics[0].message);
+            try {
+                axios.post('http://localhost:3001/publishDiagnostics', params, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                }
+                });
+            } catch (error) {
+                console.error('Error sending diagnostics:\n', error);
+            }
         });
     }
 }
@@ -243,6 +288,7 @@ function gotoDeclaration(uri: string, line: string, character: string) {
 
 export {
     startCoqServer,
+    startLeanServer,
     initializeServer,
     initialized,
     shutdown,

@@ -37,6 +37,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = require("axios");
+var express_1 = require("express");
+var app = (0, express_1.default)();
 function startServer() {
     return __awaiter(this, void 0, void 0, function () {
         var response, error_1;
@@ -273,6 +275,13 @@ function didOpen(uri, languageId, text, version) {
 //   hover,
 //   gotoDeclaration
 // };
+app.get('/publishDiagnostics', function (req, _) {
+    console.log('Received diagnostics:', req.query);
+});
+var PORT = process.env.PORT || 3000;
+app.listen(PORT, function () {
+    console.log("Server is running on port ".concat(PORT));
+});
 startServer().then(function () {
     initializeServer('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.v').then(function () {
         initialized().then(function () {

@@ -1,5 +1,5 @@
 import express from 'express';
-import { startCoqServer, initializeServer, initialized, shutdown, exit, didOpen, didClose, documentSymbol, references, definition, typeDefinition, signatureHelp, hover, gotoDeclaration, once } from './serverScriptFunctions';
+import { startCoqServer, startLeanServer, initializeServer, initialized, shutdown, exit, didOpen, didClose, documentSymbol, references, definition, typeDefinition, signatureHelp, hover, gotoDeclaration, once } from './serverScriptFunctions';
 
 //const rootPath = path.resolve(path.join(__dirname, 'mock'));
 const app = express();
@@ -7,6 +7,9 @@ const app = express();
 app.get('/start_server', (req, res) => {
   if (req.query.server === 'coq') {
     startCoqServer();
+    res.send('Server started');
+  } else if (req.query.server === 'lean') {
+    startLeanServer();
     res.send('Server started');
   }
 });
