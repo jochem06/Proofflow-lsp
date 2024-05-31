@@ -7,7 +7,7 @@ async function startServer() {
   try {
     const response = await axios.get('http://localhost:3000/start_server', {
       params: {
-        server: 'lean'
+        server: 'coq'
       }
     });
     console.log('Server Response:', response.data);
@@ -227,9 +227,9 @@ app.listen(PORT, () => {
 });
 
 startServer().then(() => {
-  initializeServer('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean').then(() => {
+  initializeServer('mock\\mock.v').then(() => {
     initialized().then(() => {
-      didOpen('C:\\Users\\smile\\Documents\\SEP\\Proofflow-lsp\\src\\mock\\mock.lean', 'lean', 'example', '1');
+      didOpen('mock\\mock.v', 'coq', 'example', '1');
     });
   });
 });
