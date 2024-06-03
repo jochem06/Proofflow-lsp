@@ -134,12 +134,14 @@ function didOpen(uri: string, languageId: string, text: string, version: string)
   }
 }
 
-function didChange(uri: string, text: string, version: string) {
+function didChange(uri: string, languageId: string, text: string, version: string) {
   if (client !== null) {
     client.didChange({
       textDocument: {
         uri: uri,
-        version: parseInt(version)
+        languageId: languageId,
+        version: parseInt(version),
+        text: text
       },
       contentChanges: [
         {
@@ -325,6 +327,7 @@ export {
   shutdown,
   exit,
   didOpen,
+  didChange,
   didClose,
   documentSymbol,
   references,

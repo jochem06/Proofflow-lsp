@@ -9,6 +9,7 @@ import {
   shutdown,
   exit,
   didOpen,
+  didChange,
   didClose,
   documentSymbol,
   references,
@@ -92,6 +93,11 @@ app.get('/exit', (_, res) => {
 app.get('/didOpen', (req, res) => {
   didOpen(req.query.uri as string, req.query.languageId as string, req.query.text as string, req.query.version as string);
   res.send('Document opened');
+});
+
+app.get('/didChange', (req, res) => {
+  didChange(req.query.uri as string, req.query.text as string, req.query.version as string);  
+  res.send('Document changed');
 });
 
 app.get('/didClose', (req, res) => {

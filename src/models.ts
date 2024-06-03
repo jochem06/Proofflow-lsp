@@ -1,4 +1,3 @@
-
 /**
  * Defines an integer number in the range of -2^31 to 2^31 - 1.
  */
@@ -450,8 +449,8 @@ interface TextDocumentContentChangeEvent {
     text: string; // The new text for the range.
 }
 
-interface DidChangeTextDocumentParams {
-    textDocument: TextDocumentIdentifier; // The document that has changed.
+export interface DidChangeTextDocumentParams {
+    textDocument: TextDocumentItem; // The document that has changed.
     contentChanges: TextDocumentContentChangeEvent[]; // Array of changes to the document.
 }
 
