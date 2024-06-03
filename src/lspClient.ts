@@ -17,7 +17,9 @@ import {
   TypeDefinitionParams,
   Location,
   HoverParams,
-  Hover, DeclarationParams
+  Hover, DeclarationParams,
+  GoalRequestParams,
+  FlecheDocumentParams
 } from "./models";
 import { once } from 'events';
 export class LspClient {
@@ -82,5 +84,14 @@ export class LspClient {
 
     public gotoDeclaration(params: DeclarationParams): PromiseLike<Location | Location[] | LocationLink[] |null> {
       return this.endpoint.send('textDocument/declaration', params);
+    }
+
+    //Coq specific functions
+    public goals(params: GoalRequestParams): PromiseLike<any> { //idk what the return type should be
+      return this.endpoint.send('proof/goals', params);
+    }
+
+    public getDocument(params: FlecheDocumentParams): PromiseLike<any> { //same here
+      return this.endpoint.send('coq/getDocument', params);
     }
 }
