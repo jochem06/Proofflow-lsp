@@ -444,6 +444,17 @@ interface Position {
     character: uinteger;
 }
 
+interface TextDocumentContentChangeEvent {
+    range?: Range; // Optional: Represents the range of the document that changed.
+    rangeLength?: number; // Optional: The length of the range that got replaced.
+    text: string; // The new text for the range.
+}
+
+interface DidChangeTextDocumentParams {
+    textDocument: TextDocumentIdentifier; // The document that has changed.
+    contentChanges: TextDocumentContentChangeEvent[]; // Array of changes to the document.
+}
+
 export interface TextDocumentEdit {
     /**
      * The text document to change.

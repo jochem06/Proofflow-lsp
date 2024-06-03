@@ -134,6 +134,22 @@ function didOpen(uri: string, languageId: string, text: string, version: string)
   }
 }
 
+function didChange(uri: string, text: string, version: string) {
+  if (client !== null) {
+    client.didChange({
+      textDocument: {
+        uri: uri,
+        version: parseInt(version)
+      },
+      contentChanges: [
+        {
+          text: text
+        }
+      ]
+    });
+  }
+}
+
 function didClose(uri: string) {
   if (client !== null) {
     client.didClose({
