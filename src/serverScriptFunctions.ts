@@ -105,8 +105,9 @@ function initialized() {
 
 function shutdown() {
   if (client !== null) {
-    client.shutdown();
+    return client.shutdown();
   }
+  return null;
 }
 
 function exit() {
