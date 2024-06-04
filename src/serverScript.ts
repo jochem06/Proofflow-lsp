@@ -62,11 +62,11 @@ setBroadcastFunction(broadcast);
 
 app.get('/start_server', (req, res) => {
   if (req.query.server === 'coq') {
-    startCoqServer();
-    res.send('Server started');
+    const result = startCoqServer();
+    res.send(result);
   } else if (req.query.server === 'lean') {
-    startLeanServer();
-    res.send('Server started');
+    const result = startLeanServer();
+    res.send(result);
   }
 });
 
@@ -96,7 +96,7 @@ app.get('/didOpen', (req, res) => {
 });
 
 app.get('/didChange', (req, res) => {
-  didChange(req.query.uri as string, req.query.text as string, req.query.version as string);  
+  didChange(req.query.uri as string, req.query.languageId as string, req.query.text as string, req.query.version as string);  
   res.send('Document changed');
 });
 

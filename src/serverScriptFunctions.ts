@@ -11,7 +11,7 @@ function setBroadcastFunction(broadcastFn: (data: any) => void) {
   broadcast = broadcastFn;
 }
 
-function startCoqServer() {
+function startCoqServer(): string {
   const process: ChildProcessWithoutNullStreams = spawn(
     'C:\\cygwin_wp\\home\\runneradmin\\.opam\\wp\\bin\\coq-lsp.exe',
     {
@@ -19,16 +19,19 @@ function startCoqServer() {
       stdio: 'pipe'
     }
   );
+  let serverStatus: string = 'Server not started'
 
   process.stdout.on('data', (data: Buffer) => {
     console.log(`stdout: ${data.toString()}`);
     if (data.toString().includes('Server started')) {
       console.log('Language server has started successfully.');
+      serverStatus = 'Server started';
     }
   });
 
   process.stderr.on('data', (data: Buffer) => {
     console.error(`stderr: ${data.toString()}`);
+    serverStatus = 'Error starting server: ' + data.toString();
   });
 
   endpoint = new lspClient.JSONRPCEndpoint(
@@ -37,9 +40,10 @@ function startCoqServer() {
   );
 
   client = new LspClient(endpoint);
+  return serverStatus;
 }
 
-async function startLeanServer() {
+function startLeanServer(): string {
   const process: ChildProcessWithoutNullStreams = spawn(
     'C:\\Users\\20212170\\.elan\\toolchains\\leanprover--lean4---stable\\bin\\lean.exe',
     ['--server'],
@@ -49,15 +53,19 @@ async function startLeanServer() {
     }
   );
 
+  let serverStatus: string = 'Server not started'
+
   process.stdout.on('data', (data: Buffer) => {
     console.log(`stdout: ${data.toString()}`);
     if (data.toString().includes('Server started')) {
       console.log('Language server has started successfully.');
+      serverStatus = 'Server started';
     }
   });
 
   process.stderr.on('data', (data: Buffer) => {
     console.error(`stderr: ${data.toString()}`);
+    serverStatus = 'Error starting server: ' + data.toString();
   });
 
   endpoint = new lspClient.JSONRPCEndpoint(
@@ -66,6 +74,7 @@ async function startLeanServer() {
   );
 
   client = new LspClient(endpoint);
+  return serverStatus;
 }
 
 async function initializeServer(filePath: string) {
