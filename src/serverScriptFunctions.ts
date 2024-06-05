@@ -19,7 +19,7 @@ function startCoqServer(): string {
       stdio: 'pipe'
     }
   );
-  let serverStatus: string = 'Server not started'
+  let serverStatus = 'Server not started'
 
   process.stdout.on('data', (data: Buffer) => {
     console.log(`stdout: ${data.toString()}`);
@@ -53,7 +53,7 @@ function startLeanServer(): string {
     }
   );
 
-  let serverStatus: string = 'Server not started'
+  let serverStatus = 'Server not started'
 
   process.stdout.on('data', (data: Buffer) => {
     console.log(`stdout: ${data.toString()}`);
