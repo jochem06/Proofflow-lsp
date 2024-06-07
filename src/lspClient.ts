@@ -19,8 +19,8 @@ import {
   HoverParams,
   Hover, DeclarationParams,
   GoalRequestParams,
-  FlecheDocumentParams
-} from "./models";
+  FlecheDocumentParams, CompletionResult, CompletionParams,
+} from './models';
 import { once } from 'events';
 export class LspClient {
 
@@ -82,7 +82,12 @@ export class LspClient {
       return this.endpoint.send('textDocument/hover', params);
     }
 
-    public gotoDeclaration(params: DeclarationParams): PromiseLike<Location | Location[] | LocationLink[] |null> {
+  public completion(params: CompletionParams): PromiseLike<CompletionResult> {
+    return this.endpoint.send('textDocument/completion', params);
+  }
+
+
+  public gotoDeclaration(params: DeclarationParams): PromiseLike<Location | Location[] | LocationLink[] |null> {
       return this.endpoint.send('textDocument/declaration', params);
     }
 

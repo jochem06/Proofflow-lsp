@@ -13,7 +13,7 @@ function setBroadcastFunction(broadcastFn: (data: any) => void) {
 
 function startCoqServer() {
   const process: ChildProcessWithoutNullStreams = spawn(
-    'C:\\cygwin_wp\\home\\runneradmin\\.opam\\wp\\bin\\coq-lsp.exe',
+    '/Users/josericho/.opam/default/bin/coq-lsp',
     {
       shell: true,
       stdio: 'pipe'
@@ -21,7 +21,7 @@ function startCoqServer() {
   );
 
   process.stdout.on('data', (data: Buffer) => {
-    console.log(`stdout: ${data.toString()}`);
+    console.log(`stdout: ${data}`);
     if (data.toString().includes('Server started')) {
       console.log('Language server has started successfully.');
     }
@@ -279,6 +279,27 @@ async function hover(uri: string, line: string, character: string): Promise<any>
   }
 }
 
+async function completion(uri: string,
+                          pos: { line: number; character: number },
+                          context: {triggerKind : number; triggerCharacter: string | undefined;}): Promise<any> {
+  if (client !== null) {
+    try {
+      const result = await client.completion({
+        textDocument: { uri },
+        position: pos,
+        context: context
+      });
+      return result;
+      console.log('Completion result:', result);
+    } catch (error) {
+      console.error('Error getting completion:', error);
+      throw error;
+    }
+  } else {
+    return 'Autocomplete failed';
+  }
+}
+
 async function gotoDeclaration(uri: string, line: string, character: string): Promise<any> {
   if (client !== null) {
     try {
@@ -317,5 +338,6 @@ export {
   signatureHelp,
   hover,
   gotoDeclaration,
-  setBroadcastFunction
+  setBroadcastFunction,
+  completion
 };

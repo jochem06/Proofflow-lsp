@@ -3091,3 +3091,69 @@ export interface GoalRequestParams {
 export interface FlecheDocumentParams {
     textDocument: OptionalVersionedTextDocumentIdentifier; //same here
 }
+
+// Define TextDocumentIdentifier
+interface TextDocumentIdentifier {
+  uri: string;
+}
+
+// Define Position
+interface Position {
+  line: number;
+  character: number;
+}
+
+// Define CompletionContext
+export interface CompletionContext {
+  triggerKind: number; // 1: Invoked, 2: TriggerCharacter, 3: TriggerForIncompleteCompletions
+  triggerCharacter?: string;
+}
+
+// Define TextEdit
+interface TextEdit {
+  range: {
+    start: Position;
+    end: Position;
+  };
+  newText: string;
+}
+
+// Define Command
+interface Command {
+  title: string;
+  command: string;
+  arguments?: any[];
+}
+
+export interface CompletionParams {
+  textDocument: TextDocumentIdentifier;
+  position: Position;
+  context?: CompletionContext;
+}
+
+// Define CompletionItem
+interface CompletionItem {
+  label: string;
+  kind?: number; // CompletionItemKind
+  detail?: string;
+  documentation?: string | { kind: string, value: string };
+  sortText?: string;
+  filterText?: string;
+  insertText?: string;
+  insertTextFormat?: number; // 1: PlainText, 2: Snippet
+  textEdit?: TextEdit;
+  additionalTextEdits?: TextEdit[];
+  commitCharacters?: string[];
+  command?: Command;
+  data?: any;
+}
+
+// Define CompletionList
+interface CompletionList {
+  isIncomplete: boolean;
+  items: CompletionItem[];
+}
+
+// Define and export CompletionResult
+export type CompletionResult = CompletionItem[] | CompletionList;
+

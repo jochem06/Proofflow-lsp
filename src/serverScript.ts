@@ -17,7 +17,8 @@ import {
   signatureHelp,
   hover,
   gotoDeclaration,
-  setBroadcastFunction
+  setBroadcastFunction,
+  completion,
 } from './serverScriptFunctions';
 
 const app = express();
@@ -138,3 +139,19 @@ app.get('/declaration', async (req, res) => {
   const result = await gotoDeclaration(req.query.uri as string, req.query.line as string, req.query.character as string);
   res.send(result);
 });
+
+app.get('/completion', async (req, res) => {
+  const uri = req.query.uri as string;
+  const line = parseInt(req.query.line as string, 10);
+  const character = parseInt(req.query.character as string, 10);
+  const triggerKind = parseInt(req.query.triggerKind as string, 10);
+  const triggerCharacter = req.query.triggerCharacter as string | undefined;
+
+  const result = await completion(
+    uri,
+    { line, character },
+    { triggerKind, triggerCharacter }
+  );
+  res.send(result);
+});
+
