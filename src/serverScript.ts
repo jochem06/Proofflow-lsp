@@ -90,13 +90,8 @@ app.get('/exit', (_, res) => {
   res.send('Client exited');
 });
 
-app.get('/didOpen', (req, res) => {
-  didOpen(req.query.uri as string, req.query.languageId as string, req.query.text as string, req.query.version as string);
-  res.send('Document opened');
-});
-
 app.get('/didChange', (req, res) => {
-  didChange(req.query.uri as string, req.query.languageId as string, req.query.text as string, req.query.version as string);  
+  didChange(req.query.uri as string, parseInt(req.query.el as string), parseInt(req.query.ec as string), req.query.text as string, parseInt(req.query.rangeLength as string));  
   res.send('Document changed');
 });
 

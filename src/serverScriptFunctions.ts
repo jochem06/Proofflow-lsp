@@ -19,7 +19,7 @@ function startCoqServer(): string {
       stdio: 'pipe'
     }
   );
-  let serverStatus: string = 'Server not started'
+  let serverStatus = 'Server not started'
 
   process.stdout.on('data', (data: Buffer) => {
     console.log(`stdout: ${data.toString()}`);
@@ -53,7 +53,7 @@ function startLeanServer(): string {
     }
   );
 
-  let serverStatus: string = 'Server not started'
+  let serverStatus = 'Server not started'
 
   process.stdout.on('data', (data: Buffer) => {
     console.log(`stdout: ${data.toString()}`);
@@ -144,17 +144,19 @@ function didOpen(uri: string, languageId: string, text: string, version: string)
   }
 }
 
-function didChange(uri: string, languageId: string, text: string, version: string) {
+function didChange(uri: string, el: number, ec: number, text: string, rangeLength: number) {
   if (client !== null) {
     client.didChange({
       textDocument: {
         uri: uri,
-        languageId: languageId,
-        version: parseInt(version),
-        text: text
       },
       contentChanges: [
         {
+          range: {
+            start: { line: 0, character: 0 },
+            end: { line: el, character: ec }
+          },
+          rangeLength: rangeLength,
           text: text
         }
       ]
