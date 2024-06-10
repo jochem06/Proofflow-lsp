@@ -50,9 +50,11 @@
   "repository": "ImperiumMaximus/ts-lsp-client",
   "bugs": "https://github.com/ImperiumMaximus/ts-lsp-client/issues",
   "dependencies": {
+    "@sourcegraph/vscode-ws-jsonrpc": "^0.0.3-fork",
     "axios": "^1.7.2",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "fd-slicer": "^1.1.0",
     "json-rpc-2.0": "^1.7.0",
     "pino": "^7.0.5",
     "pino-pretty": "^5.1.3",
