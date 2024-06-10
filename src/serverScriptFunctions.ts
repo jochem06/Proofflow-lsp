@@ -13,7 +13,7 @@ function setBroadcastFunction(broadcastFn: (data: any) => void) {
 
 function startCoqServer(): string {
   const process: ChildProcessWithoutNullStreams = spawn(
-    '/Users/josericho/.opam/default/bin/coq-lsp',
+    'C:\\cygwin_wp\\home\\runneradmin\\.opam\\wp\\bin\\coq-lsp.exe',
     {
       shell: true,
       stdio: 'pipe'

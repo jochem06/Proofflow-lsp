@@ -1,5 +1,5 @@
 import express from 'express';
-import bodyParser from 'body-parser';
+// import bodyParser from 'body-parser';
 import { WebSocketServer, WebSocket } from 'ws';
 import cors from 'cors'; // Import cors
 import {
@@ -29,8 +29,8 @@ app.use(cors({
   origin: 'http://localhost:5173' // Replace with the origin you want to allow
 }));
 app.use(express.json());
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+// app.use(bodyParser.json({ limit: '50mb' }));
+// app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
@@ -94,9 +94,9 @@ app.get('/exit', (_, res) => {
   res.send('Client exited');
 });
 
-app.post('/didOpen', (req, res) => {
-  const { uri, languageId, text, version } = req.body;
-  didOpen(uri, languageId, text, version);
+app.get('/didOpen', (req, res) => {
+  console.log(req.query.uri as string, req.query.languageId as string, req.query.text as string, req.query.version as string);
+  didOpen(req.query.uri as string, req.query.languageId as string, req.query.text as string, req.query.version as string);
   res.send('Document opened');
 });
 
