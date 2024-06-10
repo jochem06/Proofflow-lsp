@@ -11,7 +11,7 @@ function setBroadcastFunction(broadcastFn: (data: any) => void) {
   broadcast = broadcastFn;
 }
 
-function startCoqServer() {
+function startCoqServer(): string {
   const process: ChildProcessWithoutNullStreams = spawn(
     '/Users/josericho/.opam/default/bin/coq-lsp',
     {
@@ -19,16 +19,19 @@ function startCoqServer() {
       stdio: 'pipe'
     }
   );
+  let serverStatus = 'Server not started'
 
   process.stdout.on('data', (data: Buffer) => {
     console.log(`stdout: ${data}`);
     if (data.toString().includes('Server started')) {
       console.log('Language server has started successfully.');
+      serverStatus = 'Server started';
     }
   });
 
   process.stderr.on('data', (data: Buffer) => {
     console.error(`stderr: ${data.toString()}`);
+    serverStatus = 'Error starting server: ' + data.toString();
   });
 
   endpoint = new lspClient.JSONRPCEndpoint(
@@ -37,9 +40,10 @@ function startCoqServer() {
   );
 
   client = new LspClient(endpoint);
+  return serverStatus;
 }
 
-async function startLeanServer() {
+function startLeanServer(): string {
   const process: ChildProcessWithoutNullStreams = spawn(
     'C:\\Users\\20212170\\.elan\\toolchains\\leanprover--lean4---stable\\bin\\lean.exe',
     ['--server'],
@@ -49,15 +53,19 @@ async function startLeanServer() {
     }
   );
 
+  let serverStatus = 'Server not started'
+
   process.stdout.on('data', (data: Buffer) => {
     console.log(`stdout: ${data.toString()}`);
     if (data.toString().includes('Server started')) {
       console.log('Language server has started successfully.');
+      serverStatus = 'Server started';
     }
   });
 
   process.stderr.on('data', (data: Buffer) => {
     console.error(`stderr: ${data.toString()}`);
+    serverStatus = 'Error starting server: ' + data.toString();
   });
 
   endpoint = new lspClient.JSONRPCEndpoint(
@@ -66,6 +74,7 @@ async function startLeanServer() {
   );
 
   client = new LspClient(endpoint);
+  return serverStatus;
 }
 
 async function initializeServer(filePath: string) {
@@ -105,8 +114,9 @@ function initialized() {
 
 function shutdown() {
   if (client !== null) {
-    client.shutdown();
+    return client.shutdown();
   }
+  return null;
 }
 
 function exit() {
@@ -130,6 +140,24 @@ function didOpen(uri: string, languageId: string, text: string, version: string)
       if (broadcast) {
         broadcast({ type: 'diagnostics', data: params });
       }
+    });
+  }
+}
+
+function didChange(uri: string, languageId: string, text: string, version: string) {
+  if (client !== null) {
+    client.didChange({
+      textDocument: {
+        uri: uri,
+        languageId: languageId,
+        version: parseInt(version),
+        text: text
+      },
+      contentChanges: [
+        {
+          text: text
+        }
+      ]
     });
   }
 }
@@ -330,6 +358,7 @@ export {
   shutdown,
   exit,
   didOpen,
+  didChange,
   didClose,
   documentSymbol,
   references,

@@ -1,4 +1,3 @@
-
 /**
  * Defines an integer number in the range of -2^31 to 2^31 - 1.
  */
@@ -442,6 +441,17 @@ interface Position {
      * to the line length.
      */
     character: uinteger;
+}
+
+interface TextDocumentContentChangeEvent {
+    range?: Range; // Optional: Represents the range of the document that changed.
+    rangeLength?: number; // Optional: The length of the range that got replaced.
+    text: string; // The new text for the range.
+}
+
+export interface DidChangeTextDocumentParams {
+    textDocument: TextDocumentItem; // The document that has changed.
+    contentChanges: TextDocumentContentChangeEvent[]; // Array of changes to the document.
 }
 
 export interface TextDocumentEdit {

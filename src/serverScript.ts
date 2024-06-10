@@ -1,4 +1,5 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import { WebSocketServer, WebSocket } from 'ws';
 import cors from 'cors'; // Import cors
 import {
@@ -9,6 +10,7 @@ import {
   shutdown,
   exit,
   didOpen,
+  didChange,
   didClose,
   documentSymbol,
   references,
@@ -27,6 +29,8 @@ app.use(cors({
   origin: 'http://localhost:5173' // Replace with the origin you want to allow
 }));
 app.use(express.json());
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
@@ -62,11 +66,11 @@ setBroadcastFunction(broadcast);
 
 app.get('/start_server', (req, res) => {
   if (req.query.server === 'coq') {
-    startCoqServer();
-    res.send('Server started');
+    const result = startCoqServer();
+    res.send(result);
   } else if (req.query.server === 'lean') {
-    startLeanServer();
-    res.send('Server started');
+    const result = startLeanServer();
+    res.send(result);
   }
 });
 
@@ -90,9 +94,16 @@ app.get('/exit', (_, res) => {
   res.send('Client exited');
 });
 
-app.get('/didOpen', (req, res) => {
-  didOpen(req.query.uri as string, req.query.languageId as string, req.query.text as string, req.query.version as string);
+app.post('/didOpen', (req, res) => {
+  const { uri, languageId, text, version } = req.body;
+  didOpen(uri, languageId, text, version);
   res.send('Document opened');
+});
+
+app.get('/didChange', (req, res) => {
+  const { uri, languageId, text, version } = req.body;
+  didChange(uri, languageId, text, version);
+  res.send('Document changed');
 });
 
 app.get('/didClose', (req, res) => {
