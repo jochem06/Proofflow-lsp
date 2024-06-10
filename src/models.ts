@@ -1,3 +1,5 @@
+
+
 /**
  * Defines an integer number in the range of -2^31 to 2^31 - 1.
  */
@@ -443,11 +445,33 @@ interface Position {
     character: uinteger;
 }
 
-interface TextDocumentContentChangeEvent {
-    range?: Range; // Optional: Represents the range of the document that changed.
-    rangeLength?: number; // Optional: The length of the range that got replaced.
-    text: string; // The new text for the range.
-}
+/**
+ * An event describing a change to a text document. If only a text is provided
+ * it is considered to be the full content of the document.
+ */
+export type TextDocumentContentChangeEvent = {
+  /**
+   * The range of the document that changed.
+   */
+  range: Range;
+
+  /**
+   * The optional length of the range that got replaced.
+   *
+   * @deprecated use range instead.
+   */
+  rangeLength?: uinteger;
+
+  /**
+   * The new text for the provided range.
+   */
+  text: string;
+} | {
+  /**
+   * The new text of the whole document.
+   */
+  text: string;
+};
 
 export interface DidChangeTextDocumentParams {
 	/**
@@ -455,7 +479,7 @@ export interface DidChangeTextDocumentParams {
 	 * to the version after all provided content changes have
 	 * been applied.
 	 */
-	textDocument: TextDocumentIdentifier;
+	textDocument: OptionalVersionedTextDocumentIdentifier;
 
 	/**
 	 * The actual content changes. The content changes describe single state
@@ -2256,6 +2280,10 @@ export type DeclarationOptions = WorkDoneProgressOptions
 
 export interface DeclarationRegistrationOptions extends DeclarationOptions,
     TextDocumentRegistrationOptions, StaticRegistrationOptions {
+}
+
+export interface TextDocumentChangeRegistrationOptions extends TextDocumentRegistrationOptions{
+  syncKind: TextDocumentSyncKind;
 }
 
 /**
