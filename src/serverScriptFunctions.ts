@@ -144,17 +144,18 @@ function didOpen(uri: string, languageId: string, text: string, version: string)
   }
 }
 
-function didChange(uri: string, languageId: string, text: string, version: string) {
+function didChange(uri: string, el: number, ec: number, text: string) {
   if (client !== null) {
     client.didChange({
       textDocument: {
         uri: uri,
-        languageId: languageId,
-        version: parseInt(version),
-        text: text
       },
       contentChanges: [
         {
+          range: {
+            start: { line: 0, character: 0 },
+            end: { line: el, character: ec }
+          },
           text: text
         }
       ]

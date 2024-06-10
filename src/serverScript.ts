@@ -101,8 +101,7 @@ app.get('/didOpen', (req, res) => {
 });
 
 app.get('/didChange', (req, res) => {
-  const { uri, languageId, text, version } = req.body;
-  didChange(uri, languageId, text, version);
+  didChange(req.query.uri as string, parseInt(req.query.el as string), parseInt(req.query.ec as string), req.query.text as string);  
   res.send('Document changed');
 });
 
