@@ -65,11 +65,12 @@ function broadcast(data) {
 setBroadcastFunction(broadcast);
 
 app.get('/start_server', (req, res) => {
+  const path = req.query.path as string;
   if (req.query.server === 'coq') {
-    const result = startCoqServer();
+    const result = startCoqServer(path);
     res.send(result);
   } else if (req.query.server === 'lean') {
-    const result = startLeanServer();
+    const result = startLeanServer(path);
     res.send(result);
   }
 });

@@ -11,9 +11,10 @@ function setBroadcastFunction(broadcastFn: (data: any) => void) {
   broadcast = broadcastFn;
 }
 
-function startCoqServer(): string {
+function startCoqServer(path: string): string {
   const process: ChildProcessWithoutNullStreams = spawn(
-    '/Users/josericho/.opam/default/bin/coq-lsp',
+    path,
+    // /Users/josericho/.opam/default/bin/coq-lsp
     {
       shell: true,
       stdio: 'pipe'
@@ -43,9 +44,10 @@ function startCoqServer(): string {
   return serverStatus;
 }
 
-function startLeanServer(): string {
+function startLeanServer(path: string): string {
   const process: ChildProcessWithoutNullStreams = spawn(
-    'C:\\Users\\20212170\\.elan\\toolchains\\leanprover--lean4---stable\\bin\\lean.exe',
+    path,
+    // 'C:\\Users\\20212170\\.elan\\toolchains\\leanprover--lean4---stable\\bin\\lean.exe'
     ['--server'],
     {
       shell: true,
