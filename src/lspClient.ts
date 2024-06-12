@@ -54,6 +54,9 @@ export class LspClient {
     public didChange(params: DidChangeTextDocumentParams): void {
         this.endpoint.notify('textDocument/didChange', params);
     }
+  // public publishDiagnostic(params: DidChangeTextDocumentParams): void {
+  //   this.endpoint.notify('textDocument/publishDiagnostics', params);
+  // }
 
     public didClose(params: DidCloseTextDocumentParams): void {
         this.endpoint.notify('textDocument/didClose', params);
