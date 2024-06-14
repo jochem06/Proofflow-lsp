@@ -2,6 +2,7 @@ import * as lspClient from '../src/main';
 import { JSONRPCEndpoint, LspClient } from '../src/main';
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { pathToFileURL } from "url";
+import WebSocket from 'ws';
 
 let client: LspClient | null = null;
 let endpoint: JSONRPCEndpoint | null = null;
@@ -13,7 +14,7 @@ function setBroadcastFunction(broadcastFn: (data: any) => void) {
 
 function startCoqServer(): string {
   const process: ChildProcessWithoutNullStreams = spawn(
-    '/Users/josericho/.opam/default/bin/coq-lsp',
+    'C:\\cygwin_wp\\home\\runneradmin\\.opam\\wp\\bin\\coq-lsp.exe',
     {
       shell: true,
       stdio: 'pipe'
@@ -125,7 +126,7 @@ function exit() {
   }
 }
 
-function didOpen(uri: string, languageId: string, text: string, version: string) {
+function didOpen(uri: string, languageId: string, text: string, version: string, ws: WebSocket) {
   if (client !== null) {
     client.didOpen({
       textDocument: {
@@ -137,19 +138,18 @@ function didOpen(uri: string, languageId: string, text: string, version: string)
     });
     endpoint.on('textDocument/publishDiagnostics', (params) => {
       console.log('Diagnostics received:', params);
-      if (broadcast) {
-        broadcast({ type: 'diagnostics', data: params });
-      }
+      ws.send(JSON.stringify({ type: 'diagnostics', data: params }));
     });
   }
 }
 
-function didChange(uri: string, el: number, ec: number, text: string) {
+function didChange(uri: string, el: number, ec: number, text: string, version: number) {
+  console.log('version: ', version)
   if (client !== null) {
     client.didChange({
       textDocument: {
         uri: uri,
-        version: 1
+        version: version
       },
       contentChanges: [
         {
