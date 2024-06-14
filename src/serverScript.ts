@@ -1,7 +1,5 @@
-import express from 'express';
 // import bodyParser from 'body-parser';
 import { WebSocketServer, WebSocket } from 'ws';
-import cors from 'cors'; // Import cors
 import {
   startCoqServer,
   startLeanServer,
@@ -19,12 +17,11 @@ import {
   signatureHelp,
   hover,
   gotoDeclaration,
-  setBroadcastFunction,
   completion,
 } from './serverScriptFunctions';
 
 // WebSocket server setup
-const wss = new WebSocketServer({ port:8080 });
+const wss = new WebSocketServer({ port: 8080 });
 
 function sendResponse<ResponseData>(ws: WebSocket, type: string, data: ResponseData) {
   ws.send(JSON.stringify({ type, data }));
@@ -33,74 +30,92 @@ function sendResponse<ResponseData>(ws: WebSocket, type: string, data: ResponseD
 wss.on('connection', (ws) => {
   console.log('Client connected');
 
-  ws.on('message', (event) => {
+  ws.on('message', async (event) => {
     const message = JSON.parse(event.toString());
-    const data = message.params;
-    switch (message.type) {
-      case "startServer":
+    const data = message.data;
+    console.log("Got message", message)
+    switch (message.type as string) {
+      case "startServer": {
         if (data.server === 'coq') {
-          const result = startCoqServer();
-          sendResponse(ws, message.type, result);
+          const result = await startCoqServer();
+          sendResponse(ws, message.type, result)
         } else if (data.server === 'lean') {
           const result = startLeanServer();
           sendResponse(ws, message.type, result);
         }
         break;
-      case "initializeServer":
-        const initResult = initializeServer(data.filePath);
+      }
+      case "initialize": {
+        const initResult = initializeServer(data);
         sendResponse(ws, message.type, initResult);
         break;
-      case "initialized":
+      }
+      case "initialized": {
         initialized();
         break;
-      case "shutdown":
+      }
+      case "shutdown": {
         shutdown();
         break;
-      case "exit":
+      }
+      case "exit": {
         exit();
         break;
-      case "didOpen":
-        didOpen(data.textDocument.uri, data.languageId, data.text, data.version, ws);
+      }
+      case "didOpen": {
+        didOpen(data, ws);
         break;
-      case "didChange":
+      }
+      case "didChange": {
         didChange(data.textDocument.uri, data.el, data.ec, data.text, data.version);
         break;
-      case "didClose":
+      }
+      case "didClose": {
         didClose(data.textDocument.uri);
         break;
-      case "documentSymbol":
+      }
+      case "documentSymbol": {
         documentSymbol(data.textDocument.uri);
         break;
-      case "references":
+      }
+      case "references": {
         const refResult = references(data.textDocument.uri, data.position.line, data.position.character);
         sendResponse(ws, message.type, refResult);
         break;
-      case "definition":
+      }
+      case "definition": {
         const defResult = definition(data.textDocument.uri, data.position.line, data.position.character);
         sendResponse(ws, message.type, defResult);
         break;
-      case "typeDefinition":
+      }
+      case "typeDefinition": {
         const typeDefResult = typeDefinition(data.textDocument.uri, data.position.line, data.position.character);
         sendResponse(ws, message.type, typeDefResult);
         break;
-      case "signatureHelp":
+      }
+      case "signatureHelp": {
         const sigResult = signatureHelp(data.textDocument.uri, data.position.line, data.position.character);
         sendResponse(ws, message.type, sigResult);
         break;
-      case "hover":
+      }
+      case "hover": {
         const hoverResult = hover(data.textDocument.uri, data.position.line, data.position.character);
         sendResponse(ws, message.type, hoverResult);
         break;
-      case "declaration":
+      }
+      case "declaration": {
         const gotoDecResult = gotoDeclaration(data.textDocument.uri, data.position.line, data.position.character);
         sendResponse(ws, message.type, gotoDecResult);
         break;
-      case "completion":
+      }
+      case "completion": {
         const compResult = completion(data.textDocument.uri, data.position, data.context);
         sendResponse(ws, message.type, compResult);
-        break;    
-      default:
         break;
+      }    
+      default: {
+        break;
+      }
     }
   });
 

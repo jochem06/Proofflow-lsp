@@ -1,60 +1,47 @@
 import * as lspClient from '../src/main';
 import { JSONRPCEndpoint, LspClient } from '../src/main';
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-import { pathToFileURL } from "url";
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import WebSocket from 'ws';
 
 let client: LspClient | null = null;
 let endpoint: JSONRPCEndpoint | null = null;
-let broadcast: ((data: any) => void) | null = null;
 
-function setBroadcastFunction(broadcastFn: (data: any) => void) {
-  broadcast = broadcastFn;
-}
+async function startCoqServer(): Promise<string> {
+  return new Promise((resolve, _) => {
+    const child: ChildProcessWithoutNullStreams = spawn(
+      '/home/flore/.opam/default/bin/coq-lsp'
+    );
 
-function startCoqServer(): string {
-  const process: ChildProcessWithoutNullStreams = spawn(
-    'C:\\cygwin_wp\\home\\runneradmin\\.opam\\wp\\bin\\coq-lsp.exe',
-    {
-      shell: true,
-      stdio: 'pipe'
-    }
-  );
-  let serverStatus = 'Server not started'
+    child.stdout.on('data', (data: Buffer) => {
+      console.log(`stdout: ${data}`);
+      if (data.toString().includes('Server started')) {
+        console.log('Language server has started successfully.');
+        resolve('Server started');
+      }
+    });
+    child.stderr.on('data', (data: Buffer) => {
+      console.error(`stderr: ${data.toString()}`);
+      resolve('Error starting server: ' + data.toString());
+    });
 
-  process.stdout.on('data', (data: Buffer) => {
-    console.log(`stdout: ${data}`);
-    if (data.toString().includes('Server started')) {
-      console.log('Language server has started successfully.');
-      serverStatus = 'Server started';
-    }
+    endpoint = new lspClient.JSONRPCEndpoint(child.stdin, child.stdout);
+    client = new LspClient(endpoint);
+    
+    setTimeout(()=>resolve("Server should have started maybe idk"), 1000)
   });
-
-  process.stderr.on('data', (data: Buffer) => {
-    console.error(`stderr: ${data.toString()}`);
-    serverStatus = 'Error starting server: ' + data.toString();
-  });
-
-  endpoint = new lspClient.JSONRPCEndpoint(
-    process.stdin,
-    process.stdout,
-  );
-
-  client = new LspClient(endpoint);
-  return serverStatus;
 }
 
 function startLeanServer(): string {
   const process: ChildProcessWithoutNullStreams = spawn(
-    'C:\\Users\\20212170\\.elan\\toolchains\\leanprover--lean4---stable\\bin\\lean.exe',
+    '/home/flore/.elan/bin/lean',
     ['--server'],
     {
       shell: true,
-      stdio: 'pipe'
-    }
+      stdio: 'pipe',
+    },
   );
 
-  let serverStatus = 'Server not started'
+  let serverStatus = 'Server not started';
 
   process.stdout.on('data', (data: Buffer) => {
     console.log(`stdout: ${data.toString()}`);
@@ -69,34 +56,17 @@ function startLeanServer(): string {
     serverStatus = 'Error starting server: ' + data.toString();
   });
 
-  endpoint = new lspClient.JSONRPCEndpoint(
-    process.stdin,
-    process.stdout,
-  );
+  endpoint = new lspClient.JSONRPCEndpoint(process.stdin, process.stdout);
 
   client = new LspClient(endpoint);
   return serverStatus;
 }
 
-async function initializeServer(filePath: string) {
+async function initializeServer(params: lspClient.InitializeParams) {
   if (client !== null) {
     console.log('process.pid:', process.pid);
     try {
-      const result = await client.initialize({
-        processId: process.pid,
-        capabilities: {},
-        clientInfo: {
-          name: 'lspClientExample',
-          version: '0.0.9'
-        },
-        workspaceFolders: [
-          {
-            name: 'workspace',
-            uri: pathToFileURL(filePath).href
-          }
-        ],
-        rootUri: null
-      });
+      const result = await client.initialize(params);
       return result;
     } catch (error) {
       console.error('Initialization error:', error);
@@ -126,16 +96,12 @@ function exit() {
   }
 }
 
-function didOpen(uri: string, languageId: string, text: string, version: string, ws: WebSocket) {
+function didOpen(
+  data: lspClient.DidOpenTextDocumentParams,
+  ws: WebSocket,
+) {
   if (client !== null) {
-    client.didOpen({
-      textDocument: {
-        uri: uri,
-        languageId: languageId,
-        version: parseInt(version),
-        text: text
-      }
-    });
+    client.didOpen(data);
     endpoint.on('textDocument/publishDiagnostics', (params) => {
       console.log('Diagnostics received:', params);
       ws.send(JSON.stringify({ type: 'diagnostics', data: params }));
@@ -143,23 +109,29 @@ function didOpen(uri: string, languageId: string, text: string, version: string,
   }
 }
 
-function didChange(uri: string, el: number, ec: number, text: string, version: number) {
-  console.log('version: ', version)
+function didChange(
+  uri: string,
+  el: number,
+  ec: number,
+  text: string,
+  version: number,
+) {
+  console.log('version: ', version);
   if (client !== null) {
     client.didChange({
       textDocument: {
         uri: uri,
-        version: version
+        version: version,
       },
       contentChanges: [
         {
           range: {
             start: { line: 0, character: 0 },
-            end: { line: el, character: ec }
+            end: { line: el, character: ec },
           },
-          text: text
-        }
-      ]
+          text: text,
+        },
+      ],
     });
   }
 }
@@ -168,8 +140,8 @@ function didClose(uri: string) {
   if (client !== null) {
     client.didClose({
       textDocument: {
-        uri: uri
-      }
+        uri: uri,
+      },
     });
   }
 }
@@ -179,8 +151,8 @@ async function documentSymbol(uri: string): Promise<any> {
     try {
       const result = await client.documentSymbol({
         textDocument: {
-          uri: uri
-        }
+          uri: uri,
+        },
       });
       return result;
     } catch (error) {
@@ -192,20 +164,24 @@ async function documentSymbol(uri: string): Promise<any> {
   }
 }
 
-async function references(uri: string, line: string, character: string): Promise<any> {
+async function references(
+  uri: string,
+  line: string,
+  character: string,
+): Promise<any> {
   if (client !== null) {
     try {
       const result = await client.references({
         context: {
-          includeDeclaration: true
+          includeDeclaration: true,
         },
         textDocument: {
-          uri: uri
+          uri: uri,
         },
         position: {
           line: parseInt(line),
-          character: parseInt(character)
-        }
+          character: parseInt(character),
+        },
       });
       return result;
     } catch (error) {
@@ -217,17 +193,21 @@ async function references(uri: string, line: string, character: string): Promise
   }
 }
 
-async function definition(uri: string, line: string, character: string): Promise<any> {
+async function definition(
+  uri: string,
+  line: string,
+  character: string,
+): Promise<any> {
   if (client !== null) {
     try {
       const result = await client.definition({
         textDocument: {
-          uri: uri
+          uri: uri,
         },
         position: {
           line: parseInt(line),
-          character: parseInt(character)
-        }
+          character: parseInt(character),
+        },
       });
       return result;
     } catch (error) {
@@ -239,17 +219,21 @@ async function definition(uri: string, line: string, character: string): Promise
   }
 }
 
-async function typeDefinition(uri: string, line: string, character: string): Promise<any> {
+async function typeDefinition(
+  uri: string,
+  line: string,
+  character: string,
+): Promise<any> {
   if (client !== null) {
     try {
       const result = await client.typeDefinition({
         textDocument: {
-          uri: uri
+          uri: uri,
         },
         position: {
           line: parseInt(line),
-          character: parseInt(character)
-        }
+          character: parseInt(character),
+        },
       });
       return result;
     } catch (error) {
@@ -261,21 +245,25 @@ async function typeDefinition(uri: string, line: string, character: string): Pro
   }
 }
 
-async function signatureHelp(uri: string, line: string, character: string): Promise<any> {
+async function signatureHelp(
+  uri: string,
+  line: string,
+  character: string,
+): Promise<any> {
   if (client !== null) {
     try {
       const result = await client.signatureHelp({
         textDocument: {
-          uri: uri
+          uri: uri,
         },
         position: {
           line: parseInt(line),
-          character: parseInt(character)
+          character: parseInt(character),
         },
         context: {
           triggerKind: lspClient.SignatureHelpTriggerKind.Invoked,
-          isRetrigger: false
-        }
+          isRetrigger: false,
+        },
       });
       return result;
     } catch (error) {
@@ -287,17 +275,21 @@ async function signatureHelp(uri: string, line: string, character: string): Prom
   }
 }
 
-async function hover(uri: string, line: string, character: string): Promise<any> {
+async function hover(
+  uri: string,
+  line: string,
+  character: string,
+): Promise<any> {
   if (client !== null) {
     try {
       const result = await client.hover({
         textDocument: {
-          uri: uri
+          uri: uri,
         },
         position: {
           line: parseInt(line),
-          character: parseInt(character)
-        }
+          character: parseInt(character),
+        },
       });
       return result;
     } catch (error) {
@@ -309,15 +301,17 @@ async function hover(uri: string, line: string, character: string): Promise<any>
   }
 }
 
-async function completion(uri: string,
-                          pos: { line: number; character: number },
-                          context: {triggerKind : number; triggerCharacter: string | undefined;}): Promise<any> {
+async function completion(
+  uri: string,
+  pos: { line: number; character: number },
+  context: { triggerKind: number; triggerCharacter: string | undefined },
+): Promise<any> {
   if (client !== null) {
     try {
       const result = await client.completion({
         textDocument: { uri },
         position: pos,
-        context: context
+        context: context,
       });
       return result;
       console.log('Completion result:', result);
@@ -330,17 +324,21 @@ async function completion(uri: string,
   }
 }
 
-async function gotoDeclaration(uri: string, line: string, character: string): Promise<any> {
+async function gotoDeclaration(
+  uri: string,
+  line: string,
+  character: string,
+): Promise<any> {
   if (client !== null) {
     try {
       const result = await client.gotoDeclaration({
         textDocument: {
-          uri: uri
+          uri: uri,
         },
         position: {
           line: parseInt(line),
-          character: parseInt(character)
-        }
+          character: parseInt(character),
+        },
       });
       return result;
     } catch (error) {
@@ -369,6 +367,5 @@ export {
   signatureHelp,
   hover,
   gotoDeclaration,
-  setBroadcastFunction,
-  completion
+  completion,
 };
