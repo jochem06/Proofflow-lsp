@@ -67,49 +67,49 @@ wss.on('connection', (ws) => {
         break;
       }
       case "didChange": {
-        didChange(data.textDocument.uri, data.el, data.ec, data.text, data.version);
+        didChange(data);
         break;
       }
       case "didClose": {
-        didClose(data.textDocument.uri);
+        didClose(data);
         break;
       }
       case "documentSymbol": {
-        documentSymbol(data.textDocument.uri);
+        documentSymbol(data);
         break;
       }
       case "references": {
-        const refResult = references(data.textDocument.uri, data.position.line, data.position.character);
+        const refResult = references(data);
         sendResponse(ws, message.type, refResult);
         break;
       }
       case "definition": {
-        const defResult = definition(data.textDocument.uri, data.position.line, data.position.character);
+        const defResult = definition(data);
         sendResponse(ws, message.type, defResult);
         break;
       }
       case "typeDefinition": {
-        const typeDefResult = typeDefinition(data.textDocument.uri, data.position.line, data.position.character);
+        const typeDefResult = typeDefinition(data);
         sendResponse(ws, message.type, typeDefResult);
         break;
       }
       case "signatureHelp": {
-        const sigResult = signatureHelp(data.textDocument.uri, data.position.line, data.position.character);
+        const sigResult = signatureHelp(data);
         sendResponse(ws, message.type, sigResult);
         break;
       }
       case "hover": {
-        const hoverResult = hover(data.textDocument.uri, data.position.line, data.position.character);
+        const hoverResult = hover(data);
         sendResponse(ws, message.type, hoverResult);
         break;
       }
       case "declaration": {
-        const gotoDecResult = gotoDeclaration(data.textDocument.uri, data.position.line, data.position.character);
+        const gotoDecResult = gotoDeclaration(data);
         sendResponse(ws, message.type, gotoDecResult);
         break;
       }
       case "completion": {
-        const compResult = completion(data.textDocument.uri, data.position, data.context);
+        const compResult = completion(data);
         sendResponse(ws, message.type, compResult);
         break;
       }    

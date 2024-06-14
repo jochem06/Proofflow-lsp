@@ -9,7 +9,7 @@ let endpoint: JSONRPCEndpoint | null = null;
 async function startCoqServer(): Promise<string> {
   return new Promise((resolve, _) => {
     const child: ChildProcessWithoutNullStreams = spawn(
-      '/home/flore/.opam/default/bin/coq-lsp'
+      'C:\\cygwin_wp\\home\\runneradmin\\.opam\\wp\\bin\\coq-lsp.exe'
     );
 
     child.stdout.on('data', (data: Buffer) => {
@@ -110,50 +110,25 @@ function didOpen(
 }
 
 function didChange(
-  uri: string,
-  el: number,
-  ec: number,
-  text: string,
-  version: number,
+  data: lspClient.DidChangeTextDocumentParams,
 ) {
-  console.log('version: ', version);
   if (client !== null) {
-    client.didChange({
-      textDocument: {
-        uri: uri,
-        version: version,
-      },
-      contentChanges: [
-        {
-          range: {
-            start: { line: 0, character: 0 },
-            end: { line: el, character: ec },
-          },
-          text: text,
-        },
-      ],
-    });
+    client.didChange(data);
   }
 }
 
-function didClose(uri: string) {
+function didClose(
+  data: lspClient.DidCloseTextDocumentParams
+) {
   if (client !== null) {
-    client.didClose({
-      textDocument: {
-        uri: uri,
-      },
-    });
+    client.didClose(data);
   }
 }
 
-async function documentSymbol(uri: string): Promise<any> {
+async function documentSymbol(data: lspClient.DocumentSymbolParams): Promise<any> {
   if (client !== null) {
     try {
-      const result = await client.documentSymbol({
-        textDocument: {
-          uri: uri,
-        },
-      });
+      const result = await client.documentSymbol(data);
       return result;
     } catch (error) {
       console.error('Error getting document symbols:', error);
@@ -165,24 +140,11 @@ async function documentSymbol(uri: string): Promise<any> {
 }
 
 async function references(
-  uri: string,
-  line: string,
-  character: string,
+  data: lspClient.ReferenceParams
 ): Promise<any> {
   if (client !== null) {
     try {
-      const result = await client.references({
-        context: {
-          includeDeclaration: true,
-        },
-        textDocument: {
-          uri: uri,
-        },
-        position: {
-          line: parseInt(line),
-          character: parseInt(character),
-        },
-      });
+      const result = await client.references(data);
       return result;
     } catch (error) {
       console.error('Error getting references:', error);
@@ -194,21 +156,11 @@ async function references(
 }
 
 async function definition(
-  uri: string,
-  line: string,
-  character: string,
+  data: lspClient.DefinitionParams
 ): Promise<any> {
   if (client !== null) {
     try {
-      const result = await client.definition({
-        textDocument: {
-          uri: uri,
-        },
-        position: {
-          line: parseInt(line),
-          character: parseInt(character),
-        },
-      });
+      const result = await client.definition(data);
       return result;
     } catch (error) {
       console.error('Error getting definition:', error);
@@ -220,21 +172,11 @@ async function definition(
 }
 
 async function typeDefinition(
-  uri: string,
-  line: string,
-  character: string,
+  data: lspClient.TypeDefinitionParams
 ): Promise<any> {
   if (client !== null) {
     try {
-      const result = await client.typeDefinition({
-        textDocument: {
-          uri: uri,
-        },
-        position: {
-          line: parseInt(line),
-          character: parseInt(character),
-        },
-      });
+      const result = await client.typeDefinition(data);
       return result;
     } catch (error) {
       console.error('Error getting type definition:', error);
@@ -246,25 +188,11 @@ async function typeDefinition(
 }
 
 async function signatureHelp(
-  uri: string,
-  line: string,
-  character: string,
+  data: lspClient.SignatureHelpParams
 ): Promise<any> {
   if (client !== null) {
     try {
-      const result = await client.signatureHelp({
-        textDocument: {
-          uri: uri,
-        },
-        position: {
-          line: parseInt(line),
-          character: parseInt(character),
-        },
-        context: {
-          triggerKind: lspClient.SignatureHelpTriggerKind.Invoked,
-          isRetrigger: false,
-        },
-      });
+      const result = await client.signatureHelp(data);
       return result;
     } catch (error) {
       console.error('Error getting signature help:', error);
@@ -276,21 +204,11 @@ async function signatureHelp(
 }
 
 async function hover(
-  uri: string,
-  line: string,
-  character: string,
+  data: lspClient.HoverParams
 ): Promise<any> {
   if (client !== null) {
     try {
-      const result = await client.hover({
-        textDocument: {
-          uri: uri,
-        },
-        position: {
-          line: parseInt(line),
-          character: parseInt(character),
-        },
-      });
+      const result = await client.hover(data);
       return result;
     } catch (error) {
       console.error('Error getting hover:', error);
@@ -302,19 +220,12 @@ async function hover(
 }
 
 async function completion(
-  uri: string,
-  pos: { line: number; character: number },
-  context: { triggerKind: number; triggerCharacter: string | undefined },
+  data: lspClient.CompletionParams
 ): Promise<any> {
   if (client !== null) {
     try {
-      const result = await client.completion({
-        textDocument: { uri },
-        position: pos,
-        context: context,
-      });
+      const result = await client.completion(data);
       return result;
-      console.log('Completion result:', result);
     } catch (error) {
       console.error('Error getting completion:', error);
       throw error;
@@ -325,21 +236,11 @@ async function completion(
 }
 
 async function gotoDeclaration(
-  uri: string,
-  line: string,
-  character: string,
+  data: lspClient.DeclarationParams
 ): Promise<any> {
   if (client !== null) {
     try {
-      const result = await client.gotoDeclaration({
-        textDocument: {
-          uri: uri,
-        },
-        position: {
-          line: parseInt(line),
-          character: parseInt(character),
-        },
-      });
+      const result = await client.gotoDeclaration(data);
       return result;
     } catch (error) {
       console.error('Error going to declaration:', error);
