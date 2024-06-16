@@ -172,4 +172,4 @@ class WebSocketLSPServer {
   }
 }
 
-new WebSocketLSPServer(8080, "/home/flore/.opam/default/bin/coq-lsp", "/home/flore/.elan/default/bin/lean")
+new WebSocketLSPServer(8080, "/home/flore/.opam/default/bin/coq-lsp", "/home/flore/.elan/bin/lean")
