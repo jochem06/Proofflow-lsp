@@ -1,127 +1,175 @@
-// import bodyParser from 'body-parser';
-import { WebSocketServer, WebSocket } from 'ws';
-import {
-  startCoqServer,
-  startLeanServer,
-  initializeServer,
-  initialized,
-  shutdown,
-  exit,
-  didOpen,
-  didChange,
-  didClose,
-  documentSymbol,
-  references,
-  definition,
-  typeDefinition,
-  signatureHelp,
-  hover,
-  gotoDeclaration,
-  completion,
-} from './serverScriptFunctions';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export { WebSocketLSPServer };
 
-// WebSocket server setup
-const wss = new WebSocketServer({ port: 8080 });
+import { WebSocketServer, WebSocket, RawData } from 'ws';
+import { LspClient } from './lspClient';
+import { JSONRPCEndpoint } from './jsonRpcEndpoint';
+import { spawn } from 'child_process';
 
-function sendResponse<ResponseData>(ws: WebSocket, type: string, data: ResponseData) {
-  ws.send(JSON.stringify({ type, data }));
+type LSPClientRequest<ResponseType> = {
+  type: string;
+  data: ResponseType;
+};
+
+class WebSocketLSPServer {
+  private wss: WebSocketServer;
+  private client?: LspClient;
+  private endpoint?: JSONRPCEndpoint;
+
+  private coqPath: string;
+  private leanPath: string;
+
+  private lastDiagnostics?: Date;
+  private msDiagnosticsBuffer = 1000;
+  private publishDiagnosticsTimeout?: NodeJS.Timeout
+
+  constructor(port: number, coqPath: string, leanPath: string) {
+    this.coqPath = coqPath;
+    this.leanPath = leanPath;
+
+    this.wss = new WebSocketServer({ port });
+    this.wss.on('connection', (ws) => {
+      console.log('Client connected');
+      ws.on('message', this.handleMessage(ws));
+      ws.on('close', () => {
+        console.log('Client disconnected');
+      });
+    });
+
+    console.log("Websocket LSP Server ready!")
+  }
+
+  sendResponse<ResponseData>(ws: WebSocket, type: string, data: ResponseData) {
+    ws.send(JSON.stringify({ type, data }));
+  }
+
+  startCoqServer() {
+    const child = spawn(this.coqPath);
+    child.stdout.on('data', (data: Buffer) => {
+      console.log(`stdout: ${data}`);
+    });
+    child.stderr.on('data', (data: Buffer) => {
+      console.error(`stderr: ${data.toString()}`);
+    });
+
+    this.endpoint = new JSONRPCEndpoint(child.stdin, child.stdout);
+    this.client = new LspClient(this.endpoint);
+  }
+
+  startLeanServer() {
+    const child = spawn(this.leanPath, ['--server']);
+    child.stdout.on('data', (data: Buffer) => {
+      console.log(`stdout: ${data}`);
+    });
+    child.stderr.on('data', (data: Buffer) => {
+      console.error(`stderr: ${data.toString()}`);
+    });
+
+    this.endpoint = new JSONRPCEndpoint(child.stdin, child.stdout);
+    this.client = new LspClient(this.endpoint);
+  }
+
+  handleMessage(ws: WebSocket) {
+    return async (raw: RawData) => {
+      const message: LSPClientRequest<any> = JSON.parse(raw.toString());
+      console.log('Got message', message);
+      switch (message.type as string) {
+        case 'startServer': {
+          if (message.data.server === 'coq') {
+            this.startCoqServer();
+            this.sendResponse(ws, message.type, 'Server Started');
+          } else if (message.data.server === 'lean') {
+            this.startLeanServer();
+            this.sendResponse(ws, message.type, 'Server Started');
+          }
+          break;
+        }
+        case 'initialize': {
+          const result = await this.client?.initialize(message.data);
+          this.sendResponse(ws, message.type, result);
+          break;
+        }
+        case 'initialized': {
+          this.client?.initialized();
+          break;
+        }
+        case 'shutdown': {
+          const result = await this.client?.shutdown();
+          this.sendResponse(ws, message.type, result);
+          break;
+        }
+        case 'exit': {
+          this.client?.exit();
+          break;
+        }
+        case 'didOpen': {
+          this.client?.didOpen(message.data);
+          this.endpoint?.on('textDocument/publishDiagnostics', (params) => {
+            const now = new Date()
+            if (!this.lastDiagnostics) this.lastDiagnostics = now;
+            if (now.getTime() - this.lastDiagnostics.getTime() < this.msDiagnosticsBuffer) {
+              clearTimeout(this.publishDiagnosticsTimeout)
+            }
+            this.publishDiagnosticsTimeout = setTimeout(()=> ws.send(JSON.stringify({ type: 'diagnostics', data: params })), 1000)
+            this.lastDiagnostics = now
+          });
+          break;
+        }
+        case 'didChange': {
+          this.client?.didChange(message.data);
+          break;
+        }
+        case 'didClose': {
+          this.client?.didClose(message.data);
+          break;
+        }
+        case 'documentSymbol': {
+          const result = await this.client?.documentSymbol(message.data);
+          this.sendResponse(ws, message.type, result);
+          break;
+        }
+        case 'references': {
+          const result = await this.client?.references(message.data);
+          this.sendResponse(ws, message.type, result);
+          break;
+        }
+        case 'definition': {
+          const result = await this.client?.definition(message.data);
+          this.sendResponse(ws, message.type, result);
+          break;
+        }
+        case 'typeDefinition': {
+          const result = await this.client?.typeDefinition(message.data);
+          this.sendResponse(ws, message.type, result);
+          break;
+        }
+        case 'signatureHelp': {
+          const result = await this.client?.signatureHelp(message.data);
+          this.sendResponse(ws, message.type, result);
+          break;
+        }
+        case 'hover': {
+          const result = await this.client?.hover(message.data);
+          this.sendResponse(ws, message.type, result);
+          break;
+        }
+        case 'declaration': {
+          const result = await this.client?.gotoDeclaration(message.data);
+          this.sendResponse(ws, message.type, result);
+          break;
+        }
+        case 'completion': {
+          const result = await this.client?.completion(message.data);
+          this.sendResponse(ws, message.type, result);
+          break;
+        }
+        default: {
+          this.sendResponse(ws, message.type, 'type not supported');
+          break;
+        }
+      }
+    };
+  }
 }
 
-wss.on('connection', (ws) => {
-  console.log('Client connected');
-
-  ws.on('message', async (event) => {
-    const message = JSON.parse(event.toString());
-    const data = message.data;
-    console.log("Got message", message)
-    switch (message.type as string) {
-      case "startServer": {
-        if (data.server === 'coq') {
-          const result = await startCoqServer();
-          sendResponse(ws, message.type, result)
-        } else if (data.server === 'lean') {
-          const result = startLeanServer();
-          sendResponse(ws, message.type, result);
-        }
-        break;
-      }
-      case "initialize": {
-        const initResult = initializeServer(data);
-        sendResponse(ws, message.type, initResult);
-        break;
-      }
-      case "initialized": {
-        initialized();
-        break;
-      }
-      case "shutdown": {
-        shutdown();
-        break;
-      }
-      case "exit": {
-        exit();
-        break;
-      }
-      case "didOpen": {
-        didOpen(data, ws);
-        break;
-      }
-      case "didChange": {
-        didChange(data);
-        break;
-      }
-      case "didClose": {
-        didClose(data);
-        break;
-      }
-      case "documentSymbol": {
-        documentSymbol(data);
-        break;
-      }
-      case "references": {
-        const refResult = references(data);
-        sendResponse(ws, message.type, refResult);
-        break;
-      }
-      case "definition": {
-        const defResult = definition(data);
-        sendResponse(ws, message.type, defResult);
-        break;
-      }
-      case "typeDefinition": {
-        const typeDefResult = typeDefinition(data);
-        sendResponse(ws, message.type, typeDefResult);
-        break;
-      }
-      case "signatureHelp": {
-        const sigResult = signatureHelp(data);
-        sendResponse(ws, message.type, sigResult);
-        break;
-      }
-      case "hover": {
-        const hoverResult = hover(data);
-        sendResponse(ws, message.type, hoverResult);
-        break;
-      }
-      case "declaration": {
-        const gotoDecResult = gotoDeclaration(data);
-        sendResponse(ws, message.type, gotoDecResult);
-        break;
-      }
-      case "completion": {
-        const compResult = completion(data);
-        sendResponse(ws, message.type, compResult);
-        break;
-      }    
-      default: {
-        break;
-      }
-    }
-  });
-
-  ws.on('close', () => {
-    console.log('Client disconnected');
-  });
-});
-
-
+new WebSocketLSPServer(8080, "/home/flore/.opam/default/bin/coq-lsp", "/home/flore/.elan/default/bin/lean")

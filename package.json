@@ -43,7 +43,7 @@
     "test:watch": "vitest",
     "run-main": "node build/src/main.js",
     "run-serverscript": "node build/src/serverScript.js",
-    "start-all": "npm run run-main && npm run run-serverscript"
+    "start-all": "tsc -p tsconfig.release.json && npm run run-main && npm run run-serverscript"
   },
   "author": "Raffaele Fioratto <raffaele.fioratto@gmail.com>",
   "license": "MIT",
