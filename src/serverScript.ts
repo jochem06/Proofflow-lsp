@@ -16,16 +16,11 @@ class WebSocketLSPServer {
   private client?: LspClient;
   private endpoint?: JSONRPCEndpoint;
 
-  private coqPath: string;
-  private leanPath: string;
-
   private lastDiagnostics?: Date;
   private msDiagnosticsBuffer = 1000;
   private publishDiagnosticsTimeout?: NodeJS.Timeout
 
-  constructor(port: number, coqPath: string, leanPath: string) {
-    this.coqPath = coqPath;
-    this.leanPath = leanPath;
+  constructor(port: number) {
 
     this.wss = new WebSocketServer({ port });
     this.wss.on('connection', (ws) => {
@@ -43,8 +38,8 @@ class WebSocketLSPServer {
     ws.send(JSON.stringify({ type, data }));
   }
 
-  startCoqServer() {
-    const child = spawn(this.coqPath);
+  startCoqServer(path: string) {
+    const child = spawn(path);
     child.stdout.on('data', (data: Buffer) => {
       console.log(`stdout: ${data}`);
     });
@@ -56,8 +51,8 @@ class WebSocketLSPServer {
     this.client = new LspClient(this.endpoint);
   }
 
-  startLeanServer() {
-    const child = spawn(this.leanPath, ['--server']);
+  startLeanServer(path: string) {
+    const child = spawn(path, ['--server']);
     child.stdout.on('data', (data: Buffer) => {
       console.log(`stdout: ${data}`);
     });
@@ -75,11 +70,15 @@ class WebSocketLSPServer {
       console.log('Got message', message);
       switch (message.type as string) {
         case 'startServer': {
+          if (!message.data.path) {
+            this.sendResponse(ws, message.type, "Server did not start since no path was sent.")
+            return
+          }
           if (message.data.server === 'coq') {
-            this.startCoqServer();
+            this.startCoqServer(message.data.path);
             this.sendResponse(ws, message.type, 'Server Started');
           } else if (message.data.server === 'lean') {
-            this.startLeanServer();
+            this.startLeanServer(message.data.path);
             this.sendResponse(ws, message.type, 'Server Started');
           }
           break;
@@ -172,4 +171,4 @@ class WebSocketLSPServer {
   }
 }
 
-new WebSocketLSPServer(8080, "/home/flore/.opam/default/bin/coq-lsp", "/home/flore/.elan/bin/lean")
+new WebSocketLSPServer(8080)
