@@ -52,7 +52,7 @@ class WebSocketLSPServer {
   }
 
   startLeanServer(path: string) {
-    const child = spawn(path, ['--server']);
+    const child = spawn(path, ['serve']);
     child.stdout.on('data', (data: Buffer) => {
       console.log(`stdout: ${data}`);
     });
