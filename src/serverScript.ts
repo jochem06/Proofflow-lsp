@@ -112,6 +112,19 @@ class WebSocketLSPServer {
             this.publishDiagnosticsTimeout = setTimeout(()=> ws.send(JSON.stringify({ type: 'diagnostics', data: params })), 1000)
             this.lastDiagnostics = now
           });
+          // listener to check if document has been fully processed for Coq
+          this.endpoint?.on('$/logTrace', (params) => {
+            if (params.message.includes('[check]: done')) {
+              ws.send(JSON.stringify({ type: 'documentChecked', data: params }))
+            }
+          });
+          // listener to check if document has been fully processed for lean
+          this.endpoint?.on('$/lean/fileProgress', (params) => {
+            const proc = params.processing as Array<Range>
+            if (proc.length === 0) {
+              ws.send(JSON.stringify({ type: 'documentChecked', data: params }))
+            }
+          });
           break;
         }
         case 'didChange': {
