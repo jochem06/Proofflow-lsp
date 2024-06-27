@@ -91,25 +91,6 @@ class WebSocketLSPServer {
    * @returns A function that processes raw WebSocket messages.
    */
   handleMessage(ws: WebSocket) {
-    const handlers: { [key: string]: (message: LSPClientRequest<any>) => Promise<void> | void } = {
-      'startServer': this.handleStartServer.bind(this, ws),
-      'initialize': this.handleInitialize.bind(this, ws),
-      'initialized': this.handleInitialized.bind(this, ws),
-      'shutdown': this.handleShutdown.bind(this, ws),
-      'exit': this.handleExit.bind(this, ws),
-      'didOpen': this.handleDidOpen.bind(this, ws),
-      'didChange': this.handleDidChange.bind(this),
-      'didClose': this.handleDidClose.bind(this),
-      'documentSymbol': this.handleDocumentSymbol.bind(this, ws),
-      'references': this.handleReferences.bind(this, ws),
-      'definition': this.handleDefinition.bind(this, ws),
-      'typeDefinition': this.handleTypeDefinition.bind(this, ws),
-      'signatureHelp': this.handleSignatureHelp.bind(this, ws),
-      'hover': this.handleHover.bind(this, ws),
-      'declaration': this.handleDeclaration.bind(this, ws),
-      'completion': this.handleCompletion.bind(this, ws),
-    };
-
     // Returns an asynchronous function that processes raw data received.
     return async (raw: RawData) => {
       // Parses the raw data into a JSON object as a LSPClientRequest.
@@ -117,16 +98,62 @@ class WebSocketLSPServer {
 
       console.log('Got message', message);
 
-      // Retrieves a handler function based on the message type.
-      const handler = handlers[message.type];
-      if (handler) {
-        // If a handler exists, calls it with the message.
-        await handler(message);
-      } else {
-        // If no handler is found for the message type, sends a 'type not supported' response.
-        this.sendResponse(ws, message.type, 'type not supported');
+      // Call the corresponding method based on message.type
+      switch (message.type) {
+        case 'startServer':
+          await this.handleStartServer(ws, message);
+          break;
+        case 'initialize':
+          await this.handleInitialize(ws, message);
+          break;
+        case 'initialized':
+          await this.handleInitialized();
+          break;
+        case 'shutdown':
+          await this.handleShutdown(ws, message);
+          break;
+        case 'exit':
+          await this.handleExit();
+          break;
+        case 'didOpen':
+          await this.handleDidOpen(ws, message);
+          break;
+        case 'didChange':
+          await this.handleDidChange(message);
+          break;
+        case 'didClose':
+          await this.handleDidClose(message);
+          break;
+        case 'documentSymbol':
+          await this.handleDocumentSymbol(ws, message);
+          break;
+        case 'references':
+          await this.handleReferences(ws, message);
+          break;
+        case 'definition':
+          await this.handleDefinition(ws, message);
+          break;
+        case 'typeDefinition':
+          await this.handleTypeDefinition(ws, message);
+          break;
+        case 'signatureHelp':
+          await this.handleSignatureHelp(ws, message);
+          break;
+        case 'hover':
+          await this.handleHover(ws, message);
+          break;
+        case 'declaration':
+          await this.handleDeclaration(ws, message);
+          break;
+        case 'completion':
+          await this.handleCompletion(ws, message);
+          break;
+        default:
+          // If no handler is found for the message type, send a 'type not supported' response.
+          this.sendResponse(ws, message.type, 'type not supported');
       }
     };
+    
   }
 
   /**

@@ -87,12 +87,12 @@ export class LspClient {
       return this.endpoint.send('textDocument/hover', params);
     }
 
-  public completion(params: CompletionParams): PromiseLike<CompletionResult> {
-    return this.endpoint.send('textDocument/completion', params);
-  }
+    public completion(params: CompletionParams): PromiseLike<CompletionResult> {
+        return this.endpoint.send('textDocument/completion', params);
+    }
 
 
-  public gotoDeclaration(params: DeclarationParams): PromiseLike<Location | Location[] | LocationLink[] |null> {
+    public gotoDeclaration(params: DeclarationParams): PromiseLike<Location | Location[] | LocationLink[] |null> {
       return this.endpoint.send('textDocument/declaration', params);
     }
 
