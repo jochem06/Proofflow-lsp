@@ -114,7 +114,7 @@ class WebSocketLSPServer {
     this.sendResponse(ws, message.type, result);
   }
 
-  handleInitialized(ws: WebSocket, message: LSPClientRequest<any>) {
+  handleInitialized() {
     this.client?.initialized();
   }
 
@@ -123,7 +123,7 @@ class WebSocketLSPServer {
     this.sendResponse(ws, message.type, result);
   }
 
-  handleExit(ws: WebSocket, message: LSPClientRequest<any>) {
+  handleExit() {
     this.client?.exit();
   }
 
@@ -151,11 +151,11 @@ class WebSocketLSPServer {
     });
   }
 
-  handleDidChange(ws: WebSocket, message: LSPClientRequest<any>) {
+  handleDidChange(message: LSPClientRequest<any>) {
     this.client?.didChange(message.data);
   }
 
-  handleDidClose(ws: WebSocket, message: LSPClientRequest<any>) {
+  handleDidClose(message: LSPClientRequest<any>) {
     this.client?.didClose(message.data);
   }
 
