@@ -145,9 +145,13 @@ class WebSocketLSPServer {
     });
     this.endpoint?.on('$/lean/fileProgress', (params) => {
       const proc = params.processing as Array<any>;
+      
       if (proc.length === 0) {
         ws.send(JSON.stringify({ type: 'documentChecked', data: params }));
+      } else if (proc[0].kind as number === 2) {
+        ws.send(JSON.stringify({ type: 'documentChecked', data: params }));
       }
+      
     });
   }
 
