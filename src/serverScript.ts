@@ -110,14 +110,20 @@ class WebSocketLSPServer {
       'completion': this.handleCompletion.bind(this, ws),
     };
 
+    // Returns an asynchronous function that processes raw data received.
     return async (raw: RawData) => {
+      // Parses the raw data into a JSON object as a LSPClientRequest.
       const message: LSPClientRequest<any> = JSON.parse(raw.toString());
+
       console.log('Got message', message);
 
+      // Retrieves a handler function based on the message type.
       const handler = handlers[message.type];
       if (handler) {
+        // If a handler exists, calls it with the message.
         await handler(message);
       } else {
+        // If no handler is found for the message type, sends a 'type not supported' response.
         this.sendResponse(ws, message.type, 'type not supported');
       }
     };
@@ -181,27 +187,37 @@ handleExit() {
  * @param message - The message containing the document details.
  */
 handleDidOpen(ws: WebSocket, message: LSPClientRequest<any>) {
+  // Notifies the client that a document has been opened.
   this.client?.didOpen(message.data);
+
+  // Listens for 'textDocument/publishDiagnostics' events from the endpoint.
   this.endpoint?.on('textDocument/publishDiagnostics', (params) => {
     const now = new Date();
+    // Initializes lastDiagnostics with the current time if it's not already set.
     if (!this.lastDiagnostics) this.lastDiagnostics = now;
+    // Resets the timeout for publishing diagnostics if the current event is too close to the last one.
     if (now.getTime() - this.lastDiagnostics.getTime() < this.msDiagnosticsBuffer) {
       clearTimeout(this.publishDiagnosticsTimeout);
     }
+    // Sets a timeout to send diagnostics data to the client, allowing for a buffer period.
     this.publishDiagnosticsTimeout = setTimeout(() => ws.send(JSON.stringify({ type: 'diagnostics', data: params })), 1000);
-    this.lastDiagnostics = now;
+    this.lastDiagnostics = now; // Updates the last diagnostics timestamp.
   });
+
+  // Listens for log trace events, specifically looking for a 'document checked' message.
   this.endpoint?.on('$/logTrace', (params) => {
     if (params.message.includes('[check]: done')) {
+      // Sends a 'documentChecked' message to the client when the check is complete.
       ws.send(JSON.stringify({ type: 'documentChecked', data: params }));
     }
   });
+
+  // Listens for file progress events to determine the document check status.
   this.endpoint?.on('$/lean/fileProgress', (params) => {
-    const proc = params.processing as Array<any>;
+    const proc = params.processing as Array<any>; // Extracts the processing information.
     
-    if (proc.length === 0) {
-      ws.send(JSON.stringify({ type: 'documentChecked', data: params }));
-    } else if (proc[0].kind as number === 2) {
+    // Sends a 'documentChecked' message if there are no items being processed or if the first item's kind is 2.
+    if (proc.length === 0 || proc[0].kind as number === 2) {
       ws.send(JSON.stringify({ type: 'documentChecked', data: params }));
     }
   });
