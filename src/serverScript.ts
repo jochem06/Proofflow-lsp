@@ -103,28 +103,9 @@ class WebSocketLSPServer {
         }
         case 'didOpen': {
           this.client?.didOpen(message.data);
-          this.endpoint?.on('textDocument/publishDiagnostics', (params) => {
-            const now = new Date()
-            if (!this.lastDiagnostics) this.lastDiagnostics = now;
-            if (now.getTime() - this.lastDiagnostics.getTime() < this.msDiagnosticsBuffer) {
-              clearTimeout(this.publishDiagnosticsTimeout)
-            }
-            this.publishDiagnosticsTimeout = setTimeout(()=> ws.send(JSON.stringify({ type: 'diagnostics', data: params })), 1000)
-            this.lastDiagnostics = now
-          });
-          // listener to check if document has been fully processed for Coq
-          this.endpoint?.on('$/logTrace', (params) => {
-            if (params.message.includes('[check]: done')) {
-              ws.send(JSON.stringify({ type: 'documentChecked', data: params }))
-            }
-          });
-          // listener to check if document has been fully processed for lean
-          this.endpoint?.on('$/lean/fileProgress', (params) => {
-            const proc = params.processing as Array<Range>
-            if (proc.length === 0) {
-              ws.send(JSON.stringify({ type: 'documentChecked', data: params }))
-            }
-          });
+          this.setEndpointListener(this.endpoint, 'textDocument/publishDiagnostics', ws);
+          this.setEndpointListener(this.endpoint, '$/logTrace', ws);
+          this.setEndpointListener(this.endpoint, '$/lean/fileProgress', ws);
           break;
         }
         case 'didChange': {
@@ -181,6 +162,33 @@ class WebSocketLSPServer {
         }
       }
     };
+  }
+
+  setEndpointListener(endpoint: JSONRPCEndpoint, method: string, ws: WebSocket) {
+    if (method === 'textDocument/publishDiagnostics') {
+      endpoint.on(method, (params) => {
+        const now = new Date()
+        if (!this.lastDiagnostics) this.lastDiagnostics = now;
+        if (now.getTime() - this.lastDiagnostics.getTime() < this.msDiagnosticsBuffer) {
+          clearTimeout(this.publishDiagnosticsTimeout)
+        }
+        this.publishDiagnosticsTimeout = setTimeout(()=> ws.send(JSON.stringify({ type: 'diagnostics', data: params })), 1000)
+        this.lastDiagnostics = now
+      });
+    } else if (method === '$/logTrace') {	
+      endpoint.on(method, (params) => {
+        if (params.message.includes('[check]: done')) {
+          ws.send(JSON.stringify({ type: 'documentChecked', data: params }))
+        }
+      });
+    } else if (method === '$/lean/fileProgress') {
+      endpoint.on(method, (params) => {
+        const proc = params.processing as Array<Range>
+        if (proc.length === 0) {
+          ws.send(JSON.stringify({ type: 'documentChecked', data: params }))
+        }
+      });
+    }
   }
 }
 
