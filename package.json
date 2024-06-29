@@ -41,6 +41,7 @@
     "lint": "eslint src/ __tests__/ --ext .ts,.tsx",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
+    "dev": "npm run build && npm run start-all",
     "run-main": "node build/src/main.js",
     "run-serverscript": "node build/src/serverScript.js",
     "start-all": "tsc -p tsconfig.release.json && npm run run-main && npm run run-serverscript"
