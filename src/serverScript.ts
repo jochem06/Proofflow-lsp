@@ -11,6 +11,11 @@ type LSPClientRequest<ResponseType> = {
   data: ResponseType;
 };
 
+/**
+ * WebSocketLSPServer provides a WebSocket-based Language Server Protocol (LSP) server.
+ * It handles connections from clients, forwards LSP requests to the appropriate language server,
+ * and sends responses back to the clients.
+ */
 class WebSocketLSPServer {
   private wss: WebSocketServer;
   private client?: LspClient;
@@ -20,8 +25,11 @@ class WebSocketLSPServer {
   private msDiagnosticsBuffer = 1000;
   private publishDiagnosticsTimeout?: NodeJS.Timeout
 
+  /**
+   * Constructs a new WebSocketLSPServer listening on the specified port.
+   * @param port The port number on which the server will listen for connections.
+   */
   constructor(port: number) {
-
     this.wss = new WebSocketServer({ port });
     this.wss.on('connection', (ws) => {
       console.log('Client connected');
@@ -34,10 +42,20 @@ class WebSocketLSPServer {
     console.log("Websocket LSP Server ready!")
   }
 
+  /**
+   * Sends a response to the editor over WebSocket.
+   * @param ws The WebSocket connection to use for sending the response.
+   * @param type The type of the response.
+   * @param data The data to be sent as part of the response.
+   */
   sendResponse<ResponseData>(ws: WebSocket, type: string, data: ResponseData) {
     ws.send(JSON.stringify({ type, data }));
   }
 
+  /**
+   * Starts a Coq language server using the provided executable path.
+   * @param path The path to the Coq language server executable.
+   */
   startCoqServer(path: string) {
     const child = spawn(path);
     child.stdout.on('data', (data: Buffer) => {
@@ -51,6 +69,10 @@ class WebSocketLSPServer {
     this.client = new LspClient(this.endpoint);
   }
 
+  /**
+   * Starts a Lean language server using the provided executable path.
+   * @param path The path to the Lean language server executable.
+   */
   startLeanServer(path: string) {
     const child = spawn(path, ['serve']);
     child.stdout.on('data', (data: Buffer) => {
@@ -64,10 +86,18 @@ class WebSocketLSPServer {
     this.client = new LspClient(this.endpoint);
   }
 
+  /**
+   * Handles incoming WebSocket messages, parsing them as LSP requests and dispatching
+   * them to the appropriate handler based on the request type.
+   * Sends the response 
+   * @param ws The WebSocket connection from which the message was received.
+   * @returns A function that processes the received message.
+   */
   handleMessage(ws: WebSocket) {
     return async (raw: RawData) => {
+      // The received message
       const message: LSPClientRequest<any> = JSON.parse(raw.toString());
-      console.log('Got message', message);
+      // Switch case determining what handler to use based on the message type
       switch (message.type as string) {
         case 'startServer': {
           if (!message.data.path) {
@@ -114,6 +144,7 @@ class WebSocketLSPServer {
           });
           // listener to check if document has been fully processed for Coq
           this.endpoint?.on('$/logTrace', (params) => {
+            // Sends a 'documentChecked' message if the log message contains '[check]: done'.
             if (params.message.includes('[check]: done')) {
               ws.send(JSON.stringify({ type: 'documentChecked', data: params }))
             }
