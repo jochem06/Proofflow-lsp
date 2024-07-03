@@ -3137,19 +3137,7 @@ export interface DeclarationParams extends TextDocumentPositionParams,
   WorkDoneProgressParams, PartialResultParams {
 }
 
-//coq-lsp specific params
-export interface GoalRequestParams {
-    textDocument: OptionalVersionedTextDocumentIdentifier; //in coq-lsp documentation VersionedTextDocumentIdentifier is used
-    position: Position;
-    pp_format?: 'Pp' | 'Str';
-    pretac?: string;
-    command?: string;
-    mode?: 'Prev' | 'After';
-}
 
-export interface FlecheDocumentParams {
-    textDocument: OptionalVersionedTextDocumentIdentifier; //same here
-}
 
 // Define TextDocumentIdentifier
 interface TextDocumentIdentifier {
