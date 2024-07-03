@@ -120,9 +120,10 @@ class WebSocketLSPServer {
           });
           // listener to check if document has been fully processed for lean
           this.endpoint?.on('$/lean/fileProgress', (params) => {
-            const proc = params.processing as Array<Range>
-            if (proc.length === 0) {
-              ws.send(JSON.stringify({ type: 'documentChecked', data: params }))
+            const proc = params.processing as Array<any>; // Extracts the processing information.
+            // Sends a 'documentChecked' message if there are no items being processed or if the first item's kind is 2.
+            if (proc.length === 0 || proc[0].kind as number === 2) {
+              ws.send(JSON.stringify({ type: 'documentChecked', data: params }));
             }
           });
           break;
