@@ -44,7 +44,7 @@ npm run dev
 
 ## How to use ProofFlow-LSP with ProofFlow:
 Once you have installed the **ProofFlow-LSP** along with the **Pre-requisites**, 
-then you can use the LSP features in **ProofFlow** by also following ADthese steps:
+then you can use the LSP features in **ProofFlow** by also following these steps:
 
 1. Open the **ProofFlow** editor 
 2. Select the settings menu in the top right corner of the editor (the gear icon)
