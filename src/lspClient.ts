@@ -3,7 +3,6 @@ import {
   DefinitionParams,
   DidCloseTextDocumentParams,
   DidOpenTextDocumentParams,
-  DidChangeTextDocumentParams,
   DocumentSymbol,
   DocumentSymbolParams,
   InitializeParams,
@@ -18,10 +17,11 @@ import {
   TypeDefinitionParams,
   Location,
   HoverParams,
-  Hover, DeclarationParams,
-  CompletionResult, 
-  CompletionParams,
+  Hover, DeclarationParams, 
 } from './models';
+import { 
+  DidChangeTextDocumentParams,
+} from './newModels';
 import { once } from 'events';
 export class LspClient {
 
@@ -85,10 +85,6 @@ export class LspClient {
 
     public hover(params: HoverParams): PromiseLike<Hover> {
       return this.endpoint.send('textDocument/hover', params);
-    }
-
-    public completion(params: CompletionParams): PromiseLike<CompletionResult> {
-        return this.endpoint.send('textDocument/completion', params);
     }
 
     public gotoDeclaration(params: DeclarationParams): PromiseLike<Location | Location[] | LocationLink[] |null> {
