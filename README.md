@@ -1,55 +1,56 @@
-# ts-lsp-client
+# ProofFlow-LSP
+SEP Group 12 - 2024 - ProofFlow
 
-[![Version][npm-badge]][npm]
-[![Downloads/week][npm-dw-badge]][npm]
-[![TypeScript version][ts-badge]][typescript-4-3]
-[![Node.js version][nodejs-badge]][nodejs]
-[![MIT][license-badge]][license]
-[![Build Status - GitHub Actions][gha-badge]][gha-ci]
-[![Codecov][codecov-badge]][codecov]
+## Introduction
+**ProofFlow-LSP** is a language server for ProofFlow. It is a server that provides 
+language-specific features to the standard ProofFlow editor.
 
-This npm module allows to communicate to a Language Server via Language Server Protocol (LSP).
-The aim is to provide a standalone library with minimal dependencies in contrast to the official one implemented by MS which depends on VSCode node libraries.  
-The interface is heavily inspired by a Python library counterpart called [pylspclient][pylspclient].
 
-For more information on the LSP specification itself please see [here][lsp].
 
-## Installation
+## Pre-requisites:
+Ensure that you have already installed **ProofFlow** on your device. 
+If not, refer to this repository for more information and 
+follow all the steps listed on [ProofFlow](https://github.com/Moonlington/ProofFlow.git).
 
+You will also need to have the appropriate theorem proving languages and their LSP servers installed on your device:
+- **Lean**:
+  To install **Lean** the instructions [here](https://leanprover-community.github.io/get_started.html) need to be followed.
+
+- **Coq**:
+  To install **Coq** with the **Waterproof** plugins the 
+  instructions [here](https://github.com/impermeable/waterproof-vscode) need to be followed. 
+  The VS Code extension itself does not need to be installed
+
+## How to Install ProofFlow-LSP:
+Clone the repository for ProofFlow-LSP by running
+the following command:
 ```
-npm install ts-lsp-client
+git clone https://github.com/jochem06/Proofflow-lsp.git
+```
+To navigate to the directory run the following command: 
+```
+cd Proofflow-lsp
+```
+To install the node dependencies of ProofFlow the following command must be
+   run: 
+```
+npm install
+```
+With this command the program can be build and
+deployed locally:
+```
+npm run dev
 ```
 
-## Run the tests
+## How to use ProofFlow-LSP with ProofFlow:
+Once you have installed the **ProofFlow-LSP** along with the **Pre-requisites**, 
+then you can use the LSP features in **ProofFlow** by also following ADthese steps:
 
-```
-npm run test
-```
+1. Open the **ProofFlow** editor 
+2. Select the settings menu in the top right corner of the editor (the gear icon)
+3. Copy paste the path to the appropriate LSP servers for the chosen language in the settings menu
+4. Press `'Apply'`
 
-## License
-
-Licensed under the MIT License. See the [LICENSE](https://github.com/ImperiumMaximus/ts-lsp-client/blob/main/LICENSE) file for details.
-
-[ts-badge]: https://img.shields.io/badge/TypeScript-4.3-blue.svg
-[nodejs-badge]: https://img.shields.io/badge/Node.js->=%2014.21-yellow.svg
-[nodejs]: https://nodejs.org/dist/latest-v14.x/docs/api/
-[gha-badge]: https://github.com/ImperiumMaximus/ts-lsp-client/actions/workflows/nodejs.yml/badge.svg
-[gha-ci]: https://github.com/ImperiumMaximus/ts-lsp-client/actions/workflows/nodejs.yml
-[typescript]: https://www.typescriptlang.org/
-[typescript-4-3]: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-3.html
-[license-badge]: https://img.shields.io/badge/license-MIT-orange.svg
-[license]: https://github.com/ImperiumMaximus/ts-lsp-client/blob/main/LICENSE
-[jest]: https://facebook.github.io/jest/
-[eslint]: https://github.com/eslint/eslint
-[prettier]: https://prettier.io
-[volta]: https://volta.sh
-[volta-getting-started]: https://docs.volta.sh/guide/getting-started
-[volta-tomdale]: https://twitter.com/tomdale/status/1162017336699838467?s=20
-[gh-actions]: https://github.com/features/actions
-[codecov-badge]: https://codecov.io/gh/ImperiumMaximus/ts-lsp-client/branch/main/graph/badge.svg?token=fWTfaFk0Oz
-[codecov]: https://codecov.io/gh/ImperiumMaximus/ts-lsp-client
-[pylspclient]: https://github.com/yeger00/pylspclient
-[lsp]: https://microsoft.github.io/language-server-protocol/
-[npm-badge]: https://img.shields.io/npm/v/ts-lsp-client.svg
-[npm]: https://npmjs.org/package/ts-lsp-client
-[npm-dw-badge]: https://img.shields.io/npm/dw/ts-lsp-client.svg
+The LSP servers for the languages are usually an executable file (`coq-lsp.exe`, `lean.exe`). 
+If you cannot find these files, keep in mind they are usually installed 
+in the directory of whichever installer you used; in this case either `brew`, `opam`, or something else.
