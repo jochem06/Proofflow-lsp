@@ -54,3 +54,6 @@ then you can use the LSP features in **ProofFlow** by also following these steps
 The LSP servers for the languages are usually an executable file (`coq-lsp.exe`, `lean.exe`). 
 If you cannot find these files, keep in mind they are usually installed 
 in the directory of whichever installer you used; in this case either `brew`, `opam`, or something else.
+
+## Files to be checked for Code Quality Assesment:
+Only `src/serverScript.ts` and `src/newModels.ts`, as everything else in this repository has been copied, unmodified from Rafael Fioratto's original LSP [repository](https://github.com/ImperiumMaximus/ts-lsp-client)
