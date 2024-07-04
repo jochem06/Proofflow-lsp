@@ -211,11 +211,6 @@ class WebSocketLSPServer {
           this.sendResponse(ws, message.type, result);
           break;
         }
-        case 'completion': { // Handles the 'completion' message.
-          const result = await this.client?.completion(message.data);
-          this.sendResponse(ws, message.type, result);
-          break;
-        }
         default: { // Handles unsupported message types.
           this.sendResponse(ws, message.type, 'type not supported');
           break;
